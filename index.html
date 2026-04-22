@@ -2,42 +2,36 @@
 <html lang="pt-br">
 <head>
     <link rel="manifest" href="manifest.json">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icon.png">
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("App pronto para uso mobile!"))
-      .catch(err => console.log("Erro ao registrar: ", err));
-  }
-</script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estoque Pro - Versão Final</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Estoque Pro + Histórico</title>
     <style>
-        :root { --primary: #006437; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: var(--dark); }
+        :root { --primary: #006437; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--dark); }
         .container { max-width: 500px; margin: auto; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
         input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+        button { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { opacity: 0.7; scale: 0.98; }
         .btn-save { width: 100%; background: var(--primary); margin-top: 10px; }
         .btn-venda { background: var(--secondary); font-size: 13px; }
         .item-estoque { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .info { flex-grow: 1; }
         .badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; font-weight: bold; margin-right: 5px; display: inline-block; }
         .badge-estoque { background: #e8f5e9; color: #2e7d32; }
-        .lucro-val { color: #27ae60; font-weight: bold; font-size: 22px; }
+        .badge-alerta { background: #ffebee; color: #c62828; }
+        .lucro-val { color: #27ae60; font-weight: bold; font-size: 26px; }
         .sub-info { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
+        .hist-item { font-size: 13px; padding: 8px 0; border-bottom: 1px dashed #ddd; display: flex; justify-content: space-between; }
+        .venda-data { color: #95a5a6; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center">🟢 Gestão de Estoque & Lucro</h2>
+    <h2 style="text-align:center">🟢 Gestão & Histórico</h2>
 
     <div class="card">
         <h3 id="form-title" style="margin:0 0 10px 0">Novo Produto</h3>
@@ -64,11 +58,20 @@
             📱 Enviar Relatório p/ WhatsApp
         </button>
     </div>
+
+    <div class="card">
+        <h3 style="margin-top:0">🕒 Últimas Vendas</h3>
+        <div id="listaHistorico">
+            <p style="color:#95a5a6; font-size:13px">Nenhuma venda realizada ainda.</p>
+        </div>
+        <button onclick="limparHistorico()" style="background:none; color:var(--danger); font-size:11px; width:100%; margin-top:10px">Limpar Histórico</button>
+    </div>
 </div>
 
 <script>
-    // Recupera os dados ou inicia um array vazio
+    // Banco de Dados (Estoque e Vendas)
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
+    let vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
     let modoEdicao = false;
 
     function processarAcao() {
@@ -79,46 +82,41 @@
         const qtd = parseInt(document.getElementById('qtd').value);
 
         if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
-            alert("Por favor, preencha todos os campos.");
-            return;
+            alert("Preencha todos os campos!"); return;
         }
 
         if (modoEdicao) {
             const i = db.findIndex(p => p.id == id);
-            // ATENÇÃO: Mantemos o lucroAcumulado e vendidos como estão
-            db[i].nome = nome;
-            db[i].custo = custo;
-            db[i].venda = venda;
-            db[i].qtd = qtd;
+            db[i] = {...db[i], nome, custo, venda, qtd};
             modoEdicao = false;
         } else {
-            // Inicializa um novo produto com lucro zero
-            db.push({ 
-                id: Date.now(), 
-                nome: nome, 
-                custo: custo, 
-                venda: venda, 
-                qtd: qtd, 
-                vendidos: 0, 
-                lucroAcumulado: 0 
-            });
+            db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0, lucroAcumulado: 0 });
         }
-        salvar();
+        salvarTudo();
     }
 
     function realizarVenda(id) {
         const i = db.findIndex(p => p.id === id);
         if (db[i].qtd > 0) {
-            // Trava o lucro da unidade vendida com o preço atual
-            const lucroDestaUnidade = db[i].venda - db[i].custo;
+            const lucroUnidade = db[i].venda - db[i].custo;
             
+            // Registrar no histórico
+            const novaVenda = {
+                data: new Date().toLocaleString('pt-BR'),
+                nome: db[i].nome,
+                lucro: lucroUnidade
+            };
+            vendas.unshift(novaVenda); // Adiciona no topo da lista
+            if(vendas.length > 20) vendas.pop(); // Mantém apenas as últimas 20 no histórico visual
+
+            // Atualizar produto
             db[i].qtd--;
             db[i].vendidos++;
-            db[i].lucroAcumulado += lucroDestaUnidade;
+            db[i].lucroAcumulado += lucroUnidade;
             
-            salvar();
+            salvarTudo();
         } else {
-            alert("Estoque esgotado para este produto!");
+            alert("Estoque esgotado!");
         }
     }
 
@@ -129,17 +127,23 @@
         document.getElementById('custo').value = p.custo;
         document.getElementById('venda').value = p.venda;
         document.getElementById('qtd').value = p.qtd;
-        
-        document.getElementById('form-title').innerText = "Editando Preços";
-        document.getElementById('btn-principal').innerText = "Atualizar Cadastro";
+        document.getElementById('form-title').innerText = "Editando Produto";
         document.getElementById('btn-principal').style.background = "var(--edit)";
         document.getElementById('btn-cancelar').style.display = "block";
         modoEdicao = true;
         window.scrollTo(0,0);
     }
 
-    function salvar() {
+    function deletar(id) {
+        if(confirm("Excluir este produto permanentemente?")) {
+            db = db.filter(p => p.id !== id);
+            salvarTudo();
+        }
+    }
+
+    function salvarTudo() {
         localStorage.setItem('estoque_db', JSON.stringify(db));
+        localStorage.setItem('vendas_db', JSON.stringify(vendas));
         limparCampos();
         renderizar();
     }
@@ -150,40 +154,64 @@
         lista.innerHTML = '';
         let totalLucroGeral = 0;
 
+        // Renderizar Estoque
         db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
             totalLucroGeral += p.lucroAcumulado;
+            const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
             
             lista.innerHTML += `
                 <div class="item-estoque">
                     <div class="info">
                         <strong>${p.nome}</strong><br>
-                        <span class="badge badge-estoque">Est: ${p.qtd}</span>
+                        <span class="badge ${classeEstoque}">Est: ${p.qtd}</span>
                         <span class="badge" style="background:#eee">Vend: ${p.vendidos}</span>
-                        <div class="sub-info">Venda atual: R$ ${p.venda.toFixed(2)} | Lucro Real: R$ ${p.lucroAcumulado.toFixed(2)}</div>
+                        <div class="sub-info">Lucro Real: R$ ${p.lucroAcumulado.toFixed(2)}</div>
                     </div>
                     <div style="display:flex; gap:5px">
-                        <button style="background:var(--edit); padding: 5px 10px;" onclick="editar(${p.id})">✎</button>
+                        <button style="background:var(--edit); padding: 8px;" onclick="editar(${p.id})">✎</button>
+                        <button style="background:var(--danger); padding: 8px;" onclick="deletar(${p.id})">🗑️</button>
                         <button class="btn-venda" onclick="realizarVenda(${p.id})">VENDA</button>
                     </div>
                 </div>`;
         });
         document.getElementById('resumoLucro').innerText = `R$ ${totalLucroGeral.toFixed(2)}`;
+
+        // Renderizar Histórico
+        const histLista = document.getElementById('listaHistorico');
+        if(vendas.length === 0) {
+            histLista.innerHTML = '<p style="color:#95a5a6; font-size:13px">Nenhuma venda registrada.</p>';
+        } else {
+            histLista.innerHTML = vendas.map(v => `
+                <div class="hist-item">
+                    <span><b>${v.nome}</b></span>
+                    <span style="text-align:right">
+                        <span style="color:#27ae60">+R$ ${v.lucro.toFixed(2)}</span><br>
+                        <span class="venda-data">${v.data}</span>
+                    </span>
+                </div>
+            `).join('');
+        }
+    }
+
+    function limparHistorico() {
+        if(confirm("Limpar apenas a lista visual de vendas recentes?")) {
+            vendas = [];
+            localStorage.setItem('vendas_db', JSON.stringify(vendas));
+            renderizar();
+        }
     }
 
     function enviarWhatsApp() {
-        let rel = "*📊 RELATÓRIO DE VENDAS E PREÇOS*\n\n";
         let total = 0;
-
+        let rel = "*📊 RELATÓRIO DE ESTOQUE E LUCRO*\n\n";
         db.forEach(p => {
             total += p.lucroAcumulado;
-            rel += `• *${p.nome.toUpperCase()}*\n`;
-            rel += `  💰 Preço de Venda: R$ ${p.venda.toFixed(2)}\n`;
-            rel += `  📦 Unidades Vendidas: ${p.vendidos}\n`;
-            rel += `  📈 Lucro Acumulado: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
-            rel += `  --------------------------\n`;
+            rel += `📦 *${p.nome.toUpperCase()}*\n`;
+            rel += `Qtd: ${p.qtd} | Vendidos: ${p.vendidos}\n`;
+            rel += `Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
+            rel += `--------------------------\n`;
         });
-
-        rel += `\n*✅ TOTAL EM CAIXA: R$ ${total.toFixed(2)}*`;
+        rel += `\n*💰 LUCRO TOTAL: R$ ${total.toFixed(2)}*`;
         window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
     }
 
@@ -194,13 +222,11 @@
         document.getElementById('venda').value = '';
         document.getElementById('qtd').value = '';
         document.getElementById('form-title').innerText = "Novo Produto";
-        document.getElementById('btn-principal').innerText = "Salvar Produto";
         document.getElementById('btn-principal').style.background = "var(--primary)";
         document.getElementById('btn-cancelar').style.display = "none";
         modoEdicao = false;
     }
 
-    // Inicializa a tela ao carregar
     renderizar();
 </script>
 </body>
