@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vendas - Estoque Pro</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #006437;
+            --secondary: #34b7f1;
+            --danger: #e74c3c;
+            --edit: #f39c12;
+            --bg: #f5f7fa;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+
+        /* Topo da Tela */
+        .header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .lucro-hoje {
+            text-align: right;
+        }
+
+        .lucro-hoje span {
+            display: block;
+            font-size: 10px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .lucro-hoje strong {
+            color: #27ae60;
+            font-size: 18px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* Busca */
+        .search-box {
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            padding: 5px 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .search-box input {
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* Card de Produto */
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .badge-estoque { background: #e8f5e9; color: #2e7d32; }
+        .badge-alerta { background: #ffebee; color: #c62828; }
+
+        .price-tag {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 5px 0;
+        }
+
+        /* Botões de Ação */
+        .actions {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .btn-venda {
+            flex-grow: 2;
+            background: var(--secondary);
+            color: white;
+            padding: 12px;
+            gap: 8px;
+        }
+
+        .btn-edit {
+            background: #f1f3f5;
+            color: var(--edit);
+            padding: 12px;
+            width: 50px;
+        }
+
+        .btn-del {
+            background: #f1f3f5;
+            color: var(--danger);
+            padding: 12px;
+            width: 50px;
+        }
+
+        button:active { transform: scale(0.95); opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a href="index.html" class="btn-back">
+        <i class="material-icons">arrow_back</i>
+    </a>
+    <h3 style="margin:0">Vendas</h3>
+    <div class="lucro-hoje">
+        <span>Lucro Total</span>
+        <strong id="totalLucro">R$ 0,00</strong>
+    </div>
+</div>
+
+<div class="container">
+    <div class="search-box">
+        <i class="material-icons" style="color:#bdc3c7">search</i>
+        <input type="text" id="busca" placeholder="Buscar produto..." onkeyup="renderizar()">
+    </div>
+
+    <div id="listaProdutos">
+        </div>
+</div>
+
+<script>
+    // Carrega os dados do LocalStorage
+    let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
+    let vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
+
+    function renderizar() {
+        const lista = document.getElementById('listaProdutos');
+        const termo = document.getElementById('busca').value.toLowerCase();
+        let lucroTotal = 0;
+        
+        lista.innerHTML = '';
+
+        db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
+            lucroTotal += p.lucroAcumulado;
+            const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
+            
+            lista.innerHTML += `
+                <div class="item-card">
+                    <div class="item-info">
+                        <div>
+                            <p class="item-name">${p.nome}</p>
+                            <span class="badge ${classeEstoque}">Estoque: ${p.qtd}</span>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="price-tag">R$ ${p.venda.toFixed(2)}</div>
+                            <small style="color:#95a5a6; font-size:10px">Custo: R$ ${p.custo.toFixed(2)}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn-edit" onclick="editar(${p.id})" title="Editar">
+                            <i class="material-icons">edit</i>
+                        </button>
+                        <button class="btn-del" onclick="deletar(${p.id})" title="Excluir">
+                            <i class="material-icons">delete</i>
+                        </button>
+                        <button class="btn-venda" onclick="realizarVenda(${p.id})">
+                            <i class="material-icons">shopping_cart</i> VENDER
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('totalLucro').innerText = `R$ ${lucroTotal.toFixed(2)}`;
+    }
+
+    function realizarVenda(id) {
+        const i = db.findIndex(p => p.id === id);
+        if (db[i].qtd > 0) {
+            const lucroUnidade = db[i].venda - db[i].custo;
+            
+            // Registra a venda
+            const novaVenda = {
+                data: new Date().toLocaleString('pt-BR'),
+                nome: db[i].nome,
+                venda: db[i].venda,
+                custo: db[i].custo,
+                lucro: lucroUnidade
+            };
+            
+            vendas.unshift(novaVenda);
+            if(vendas.length > 50) vendas.pop();
+
+            // Atualiza o estoque e lucro no produto
+            db[i].qtd--;
+            db[i].vendidos++;
+            db[i].lucroAcumulado += lucroUnidade;
+            db[i].custoAcumulado = (db[i].custoAcumulado || 0) + db[i].custo;
+            
+            salvar();
+        } else {
+            alert("⚠️ Estoque esgotado para este produto!");
+        }
+    }
+
+    function editar(id) {
+        // Redireciona para a tela de produtos passando o ID para editar
+        // Ou você pode abrir um prompt simples se preferir não trocar de tela
+        localStorage.setItem('produto_para_editar', id);
+        window.location.href = 'produtos.html'; 
+    }
+
+    function deletar(id) {
+        if (confirm("Tem certeza que deseja excluir este produto do sistema?")) {
+            db = db.filter(p => p.id !== id);
+            salvar();
+        }
+    }
+
+    function salvar() {
+        localStorage.setItem('estoque_db', JSON.stringify(db));
+        localStorage.setItem('vendas_db', JSON.stringify(vendas));
+        renderizar();
+    }
+
+    // Inicializa a lista
+    renderizar();
+</script>
+
+</body>
+</html>
