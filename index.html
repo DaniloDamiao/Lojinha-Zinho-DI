@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estoque Pro - Lucro Real</title>
+    <title>Estoque Pro - Versão Final</title>
     <style>
         :root { --primary: #006437; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: var(--dark); }
@@ -13,16 +13,18 @@
         button { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
         .btn-save { width: 100%; background: var(--primary); margin-top: 10px; }
         .btn-venda { background: var(--secondary); font-size: 13px; }
-        .item-estoque { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; font-weight: bold; margin-right: 5px; }
+        .item-estoque { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .info { flex-grow: 1; }
+        .badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; font-weight: bold; margin-right: 5px; display: inline-block; }
         .badge-estoque { background: #e8f5e9; color: #2e7d32; }
         .lucro-val { color: #27ae60; font-weight: bold; font-size: 22px; }
+        .sub-info { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center">🟢 Gestão Palmeiras Estoque</h2>
+    <h2 style="text-align:center">🟢 Gestão de Estoque & Lucro</h2>
 
     <div class="card">
         <h3 id="form-title" style="margin:0 0 10px 0">Novo Produto</h3>
@@ -34,24 +36,25 @@
         </div>
         <input type="number" id="qtd" placeholder="Qtd em Estoque">
         <button class="btn-save" id="btn-principal" onclick="processarAcao()">Salvar Produto</button>
-        <button id="btn-cancelar" onclick="limparCampos()" style="display:none; background:#bdc3c7; width:100%; margin-top:5px">Cancelar</button>
+        <button id="btn-cancelar" onclick="limparCampos()" style="display:none; background:#bdc3c7; width:100%; margin-top:5px; color: #2c3e50;">Cancelar Edição</button>
     </div>
 
     <div class="card">
-        <input type="text" id="busca" placeholder="🔍 Buscar..." onkeyup="renderizar()">
+        <input type="text" id="busca" placeholder="🔍 Buscar produto..." onkeyup="renderizar()">
         <div id="listaEstoque"></div>
     </div>
 
     <div class="card" style="text-align: center;">
-        <p style="margin:0">Lucro Realizado (Dinheiro no Bolso)</p>
+        <p style="margin:0">Lucro Total Realizado</p>
         <div id="resumoLucro" class="lucro-val">R$ 0,00</div>
         <button onclick="enviarWhatsApp()" style="background: #075E54; width: 100%; margin-top: 15px;">
-            📱 Enviar Relatório WhatsApp
+            📱 Enviar Relatório p/ WhatsApp
         </button>
     </div>
 </div>
 
 <script>
+    // Recupera os dados ou inicia um array vazio
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
     let modoEdicao = false;
 
@@ -62,16 +65,30 @@
         const venda = parseFloat(document.getElementById('venda').value);
         const qtd = parseInt(document.getElementById('qtd').value);
 
-        if (!nome || isNaN(custo) || isNaN(venda)) return alert("Preencha tudo!");
+        if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
+            alert("Por favor, preencha todos os campos.");
+            return;
+        }
 
         if (modoEdicao) {
             const i = db.findIndex(p => p.id == id);
-            // Atualiza dados mantendo o lucro acumulado antigo intacto
-            db[i] = { ...db[i], nome, custo, venda, qtd };
+            // ATENÇÃO: Mantemos o lucroAcumulado e vendidos como estão
+            db[i].nome = nome;
+            db[i].custo = custo;
+            db[i].venda = venda;
+            db[i].qtd = qtd;
             modoEdicao = false;
         } else {
-            // Novo produto começa com lucro zero
-            db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0, lucroAcumulado: 0 });
+            // Inicializa um novo produto com lucro zero
+            db.push({ 
+                id: Date.now(), 
+                nome: nome, 
+                custo: custo, 
+                venda: venda, 
+                qtd: qtd, 
+                vendidos: 0, 
+                lucroAcumulado: 0 
+            });
         }
         salvar();
     }
@@ -79,16 +96,17 @@
     function realizarVenda(id) {
         const i = db.findIndex(p => p.id === id);
         if (db[i].qtd > 0) {
-            // CALCULA O LUCRO DA VENDA ATUAL
-            const lucroDestaVenda = db[i].venda - db[i].custo;
+            // Trava o lucro da unidade vendida com o preço atual
+            const lucroDestaUnidade = db[i].venda - db[i].custo;
             
             db[i].qtd--;
             db[i].vendidos++;
-            // SOMA AO LUCRO QUE JÁ ESTAVA GUARDADO
-            db[i].lucroAcumulado += lucroDestaVenda;
+            db[i].lucroAcumulado += lucroDestaUnidade;
             
             salvar();
-        } else { alert("Sem estoque!"); }
+        } else {
+            alert("Estoque esgotado para este produto!");
+        }
     }
 
     function editar(id) {
@@ -98,7 +116,9 @@
         document.getElementById('custo').value = p.custo;
         document.getElementById('venda').value = p.venda;
         document.getElementById('qtd').value = p.qtd;
-        document.getElementById('btn-principal').innerText = "Atualizar Preços";
+        
+        document.getElementById('form-title').innerText = "Editando Preços";
+        document.getElementById('btn-principal').innerText = "Atualizar Cadastro";
         document.getElementById('btn-principal').style.background = "var(--edit)";
         document.getElementById('btn-cancelar').style.display = "block";
         modoEdicao = true;
@@ -115,55 +135,59 @@
         const lista = document.getElementById('listaEstoque');
         const termo = document.getElementById('busca').value.toLowerCase();
         lista.innerHTML = '';
-        let lucroTotalGeral = 0;
+        let totalLucroGeral = 0;
 
         db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
-            lucroTotalGeral += p.lucroAcumulado;
+            totalLucroGeral += p.lucroAcumulado;
             
             lista.innerHTML += `
                 <div class="item-estoque">
                     <div class="info">
                         <strong>${p.nome}</strong><br>
-                        <span class="badge badge-estoque">Estoque: ${p.qtd}</span>
-                        <span class="badge" style="background:#eee">Vendas: ${p.vendidos}</span>
-                        <br><small>Lucro acumulado: R$ ${p.lucroAcumulado.toFixed(2)}</small>
+                        <span class="badge badge-estoque">Est: ${p.qtd}</span>
+                        <span class="badge" style="background:#eee">Vend: ${p.vendidos}</span>
+                        <div class="sub-info">Venda atual: R$ ${p.venda.toFixed(2)} | Lucro Real: R$ ${p.lucroAcumulado.toFixed(2)}</div>
                     </div>
                     <div style="display:flex; gap:5px">
-                        <button style="background:var(--edit)" onclick="editar(${p.id})">✎</button>
+                        <button style="background:var(--edit); padding: 5px 10px;" onclick="editar(${p.id})">✎</button>
                         <button class="btn-venda" onclick="realizarVenda(${p.id})">VENDA</button>
                     </div>
                 </div>`;
         });
-        document.getElementById('resumoLucro').innerText = `R$ ${lucroTotalGeral.toFixed(2)}`;
+        document.getElementById('resumoLucro').innerText = `R$ ${totalLucroGeral.toFixed(2)}`;
     }
 
     function enviarWhatsApp() {
-        let rel = "📊 BALANÇO DE VENDAS REALIZADAS\n\n";
-        let totalGeral = 0;
+        let rel = "*📊 RELATÓRIO DE VENDAS E PREÇOS*\n\n";
+        let total = 0;
 
         db.forEach(p => {
-            totalGeral += p.lucroAcumulado;
-            rel += • *${p.nome.toUpperCase()}*\n;
-            rel += `  💰 Preço Venda: R$ ${p.venda.toFixed(2)}\n`;
-            rel += `  📦 Vendidos: ${p.vendidos} un\n`;
-            rel += `  📈 Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
-            rel += --------------------------\n;
+            total += p.lucroAcumulado;
+            rel += `• *${p.nome.toUpperCase()}*\n`;
+            rel += `  💰 Preço de Venda: R$ ${p.venda.toFixed(2)}\n`;
+            rel += `  📦 Unidades Vendidas: ${p.vendidos}\n`;
+            rel += `  📈 Lucro Acumulado: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
+            rel += `  --------------------------\n`;
         });
 
-        rel += \n*✅ TOTAL NO BOLSO: R$ ${totalGeral.toFixed(2)}*;
-        
-        // Abre o WhatsApp com o relatório formatado
-        window.open(https://wa.me/?text=${encodeURIComponent(rel)}, '_blank');
+        rel += `\n*✅ TOTAL EM CAIXA: R$ ${total.toFixed(2)}*`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
     }
 
     function limparCampos() {
-        document.querySelectorAll('input').forEach(i => i.value = '');
+        document.getElementById('edit-id').value = '';
+        document.getElementById('nome').value = '';
+        document.getElementById('custo').value = '';
+        document.getElementById('venda').value = '';
+        document.getElementById('qtd').value = '';
+        document.getElementById('form-title').innerText = "Novo Produto";
         document.getElementById('btn-principal').innerText = "Salvar Produto";
         document.getElementById('btn-principal').style.background = "var(--primary)";
         document.getElementById('btn-cancelar').style.display = "none";
         modoEdicao = false;
     }
 
+    // Inicializa a tela ao carregar
     renderizar();
 </script>
 </body>
