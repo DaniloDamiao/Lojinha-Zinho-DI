@@ -7,72 +7,108 @@
     <link rel="apple-touch-icon" href="icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Estoque Pro + Custos</title>
+    <title>Estoque Pro - Menu</title>
     <style>
         :root { --primary: #006437; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--dark); }
-        .container { max-width: 500px; margin: auto; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--dark); }
+        
+        /* Menu de Navegação */
+        .navbar { background: var(--primary); display: flex; justify-content: space-around; padding: 15px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .nav-item { color: white; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.8; }
+        .nav-item.active { opacity: 1; font-weight: bold; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+
+        .container { max-width: 500px; margin: auto; padding: 15px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
         input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         button { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { opacity: 0.7; scale: 0.98; }
-        .btn-save { width: 100%; background: var(--primary); margin-top: 10px; }
-        .btn-venda { background: var(--secondary); font-size: 13px; }
+        
+        .btn-main { width: 100%; background: var(--primary); margin-top: 10px; }
+        .btn-venda { background: var(--secondary); font-size: 13px; padding: 10px; }
+        .btn-wpp { background: #075E54; width: 100%; margin-top: 10px; }
+
         .item-estoque { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
         .badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; font-weight: bold; margin-right: 5px; display: inline-block; }
         .badge-estoque { background: #e8f5e9; color: #2e7d32; }
         .badge-alerta { background: #ffebee; color: #c62828; }
-        .lucro-val { color: #27ae60; font-weight: bold; font-size: 26px; }
-        .sub-info { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
-        .hist-item { font-size: 13px; padding: 8px 0; border-bottom: 1px dashed #ddd; display: flex; justify-content: space-between; }
-        .venda-data { color: #95a5a6; font-size: 11px; }
-        .custo-txt { color: #e74c3c; font-size: 11px; }
+        .lucro-val { color: #27ae60; font-weight: bold; font-size: 32px; margin: 10px 0; }
+        
+        .hist-item { font-size: 13px; padding: 10px; border-bottom: 1px dashed #ddd; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
+<nav class="navbar">
+    <div class="nav-item active" onclick="abrirAba('aba-vendas', this)"><span>🛒 Vendas</span></div>
+    <div class="nav-item" onclick="abrirAba('aba-cadastro', this)"><span>➕ Produto</span></div>
+    <div class="nav-item" onclick="abrirAba('aba-relatorio', this)"><span>📊 Resumo</span></div>
+    <div class="nav-item" onclick="abrirAba('aba-historico', this)"><span>🕒 Histórico</span></div>
+</nav>
+
 <div class="container">
-    <h2 style="text-align:center">🟢 Gestão de Lucro Real</h2>
 
-    <div class="card">
-        <h3 id="form-title" style="margin:0 0 10px 0">Novo Produto</h3>
-        <input type="hidden" id="edit-id">
-        <input type="text" id="nome" placeholder="Nome do Produto">
-        <div style="display:flex; gap:5px">
-            <input type="number" id="custo" placeholder="Custo R$" step="0.01">
-            <input type="number" id="venda" placeholder="Venda R$" step="0.01">
-        </div>
-        <input type="number" id="qtd" placeholder="Qtd em Estoque">
-        <button class="btn-save" id="btn-principal" onclick="processarAcao()">Salvar Produto</button>
-        <button id="btn-cancelar" onclick="limparCampos()" style="display:none; background:#bdc3c7; width:100%; margin-top:5px; color: #2c3e50;">Cancelar Edição</button>
-    </div>
-
-    <div class="card">
+    <div id="aba-vendas" class="tab-content active">
+        <h3>Lista para Venda</h3>
         <input type="text" id="busca" placeholder="🔍 Buscar produto..." onkeyup="renderizar()">
-        <div id="listaEstoque"></div>
+        <div id="listaEstoqueVenda"></div>
     </div>
 
-    <div class="card" style="text-align: center;">
-        <p style="margin:0">Lucro Total Realizado</p>
-        <div id="resumoLucro" class="lucro-val">R$ 0,00</div>
-        <button onclick="enviarWhatsApp()" style="background: #075E54; width: 100%; margin-top: 15px;">
-            📱 Enviar Relatório p/ WhatsApp
-        </button>
-    </div>
-
-    <div class="card">
-        <h3 style="margin-top:0">🕒 Histórico de Vendas</h3>
-        <div id="listaHistorico">
-            <p style="color:#95a5a6; font-size:13px">Nenhuma venda realizada.</p>
+    <div id="aba-cadastro" class="tab-content">
+        <div class="card">
+            <h3 id="form-title" style="margin:0 0 10px 0">Novo Produto</h3>
+            <input type="hidden" id="edit-id">
+            <input type="text" id="nome" placeholder="Nome do Produto">
+            <div style="display:flex; gap:5px">
+                <input type="number" id="custo" placeholder="Custo R$" step="0.01">
+                <input type="number" id="venda" placeholder="Venda R$" step="0.01">
+            </div>
+            <input type="number" id="qtd" placeholder="Qtd Inicial">
+            <button class="btn-main" id="btn-principal" onclick="processarAcao()">Salvar no Sistema</button>
+            <button id="btn-cancelar" onclick="cancelarEdicao()" style="display:none; background:#bdc3c7; width:100%; margin-top:5px; color: #2c3e50;">Voltar</button>
         </div>
-        <button onclick="limparHistorico()" style="background:none; color:var(--danger); font-size:11px; width:100%; margin-top:10px">Limpar Histórico Visual</button>
+        
+        <h4>Gerenciar Produtos</h4>
+        <div id="listaGerenciar"></div>
     </div>
+
+    <div id="aba-relatorio" class="tab-content">
+        <div class="card" style="text-align: center;">
+            <p style="margin:0">Lucro Acumulado</p>
+            <div id="resumoLucro" class="lucro-val">R$ 0,00</div>
+            <div id="detalheFinanceiro" style="font-size:14px; color:#7f8c8d; margin-bottom:15px"></div>
+            <button onclick="enviarWhatsApp()" class="btn-wpp">
+                📱 Enviar p/ WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <div id="aba-historico" class="tab-content">
+        <div class="card">
+            <h3 style="margin-top:0">Vendas Recentes</h3>
+            <div id="listaHistorico"></div>
+            <button onclick="limparHistorico()" style="background:none; color:var(--danger); font-size:11px; width:100%; margin-top:10px">Limpar Lista Visual</button>
+        </div>
+    </div>
+
 </div>
 
 <script>
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
     let vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
     let modoEdicao = false;
+
+    // Lógica de Navegação
+    function abrirAba(idAba, elemento) {
+        document.querySelectorAll('.tab-content').forEach(aba => aba.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        
+        document.getElementById(idAba).classList.add('active');
+        elemento.classList.add('active');
+        renderizar();
+    }
 
     function processarAcao() {
         const id = document.getElementById('edit-id').value;
@@ -82,7 +118,7 @@
         const qtd = parseInt(document.getElementById('qtd').value);
 
         if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
-            alert("Preencha tudo corretamente!"); return;
+            alert("Preencha todos os campos!"); return;
         }
 
         if (modoEdicao) {
@@ -92,34 +128,31 @@
         } else {
             db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0, lucroAcumulado: 0, custoAcumulado: 0 });
         }
-        salvarTudo();
+        salvarETelas();
     }
 
     function realizarVenda(id) {
         const i = db.findIndex(p => p.id === id);
         if (db[i].qtd > 0) {
-            const custoNaHora = db[i].custo;
-            const vendaNaHora = db[i].venda;
-            const lucroNaHora = vendaNaHora - custoNaHora;
-            
+            const lucro = db[i].venda - db[i].custo;
             const novaVenda = {
                 data: new Date().toLocaleString('pt-BR'),
                 nome: db[i].nome,
-                venda: vendaNaHora,
-                custo: custoNaHora,
-                lucro: lucroNaHora
+                venda: db[i].venda,
+                custo: db[i].custo,
+                lucro: lucro
             };
-            
             vendas.unshift(novaVenda);
-            if(vendas.length > 30) vendas.pop(); 
+            if(vendas.length > 30) vendas.pop();
 
             db[i].qtd--;
             db[i].vendidos++;
-            db[i].lucroAcumulado += lucroNaHora;
-            // Registramos também quanto custou o que foi vendido
-            db[i].custoAcumulado = (db[i].custoAcumulado || 0) + custoNaHora;
+            db[i].lucroAcumulado += lucro;
+            db[i].custoAcumulado = (db[i].custoAcumulado || 0) + db[i].custo;
             
-            salvarTudo();
+            localStorage.setItem('estoque_db', JSON.stringify(db));
+            localStorage.setItem('vendas_db', JSON.stringify(vendas));
+            renderizar();
         } else {
             alert("Estoque zerado!");
         }
@@ -136,94 +169,95 @@
         document.getElementById('btn-principal').style.background = "var(--edit)";
         document.getElementById('btn-cancelar').style.display = "block";
         modoEdicao = true;
-        window.scrollTo(0,0);
+        abrirAba('aba-cadastro', document.querySelectorAll('.nav-item')[1]);
+    }
+
+    function cancelarEdicao() {
+        limparCampos();
+        abrirAba('aba-vendas', document.querySelectorAll('.nav-item')[0]);
     }
 
     function deletar(id) {
-        if(confirm("Excluir produto e histórico?")) {
+        if(confirm("Excluir este produto?")) {
             db = db.filter(p => p.id !== id);
-            salvarTudo();
+            salvarETelas();
         }
     }
 
-    function salvarTudo() {
+    function salvarETelas() {
         localStorage.setItem('estoque_db', JSON.stringify(db));
-        localStorage.setItem('vendas_db', JSON.stringify(vendas));
         limparCampos();
         renderizar();
+        abrirAba('aba-vendas', document.querySelectorAll('.nav-item')[0]);
     }
 
     function renderizar() {
-        const lista = document.getElementById('listaEstoque');
         const termo = document.getElementById('busca').value.toLowerCase();
-        lista.innerHTML = '';
-        let totalLucroGeral = 0;
-
-        db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
-            totalLucroGeral += p.lucroAcumulado;
-            const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
-            
-            lista.innerHTML += `
-                <div class="item-estoque">
-                    <div class="info">
-                        <strong>${p.nome}</strong><br>
-                        <span class="badge ${classeEstoque}">Est: ${p.qtd}</span>
-                        <span class="badge" style="background:#eee">Vend: ${p.vendidos}</span>
-                        <div class="sub-info">Lucro: R$ ${p.lucroAcumulado.toFixed(2)}</div>
-                    </div>
-                    <div style="display:flex; gap:5px">
-                        <button style="background:var(--edit); padding: 8px;" onclick="editar(${p.id})">✎</button>
-                        <button style="background:var(--danger); padding: 8px;" onclick="deletar(${p.id})">🗑️</button>
-                        <button class="btn-venda" onclick="realizarVenda(${p.id})">VENDA</button>
-                    </div>
-                </div>`;
-        });
-        document.getElementById('resumoLucro').innerText = `R$ ${totalLucroGeral.toFixed(2)}`;
-
+        const listaVenda = document.getElementById('listaEstoqueVenda');
+        const listaGerenciar = document.getElementById('listaGerenciar');
         const histLista = document.getElementById('listaHistorico');
-        if(vendas.length === 0) {
-            histLista.innerHTML = '<p style="color:#95a5a6; font-size:13px">Nenhuma venda.</p>';
-        } else {
-            histLista.innerHTML = vendas.map(v => `
-                <div class="hist-item">
-                    <span><b>${v.nome}</b><br><small class="venda-data">${v.data}</small></span>
-                    <span style="text-align:right">
-                        <span style="color:#27ae60">Lucro: R$ ${v.lucro.toFixed(2)}</span><br>
-                        <span class="custo-txt">Custo: R$ ${v.custo.toFixed(2)}</span>
-                    </span>
-                </div>
-            `).join('');
-        }
-    }
-
-    function limparHistorico() {
-        if(confirm("Limpar lista visual?")) {
-            vendas = [];
-            localStorage.setItem('vendas_db', JSON.stringify(vendas));
-            renderizar();
-        }
-    }
-
-    function enviarWhatsApp() {
+        
+        listaVenda.innerHTML = '';
+        listaGerenciar.innerHTML = '';
         let totalLucro = 0;
         let totalCusto = 0;
-        let rel = "*📊 RELATÓRIO DETALHADO*\n\n";
-        
+
         db.forEach(p => {
             totalLucro += p.lucroAcumulado;
             totalCusto += (p.custoAcumulado || 0);
-            rel += `📦 *${p.nome.toUpperCase()}*\n`;
-            rel += `Vendidos: ${p.vendidos} un.\n`;
-            rel += `Custo Total: R$ ${(p.custoAcumulado || 0).toFixed(2)}\n`;
-            rel += `Lucro Total: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
-            rel += `--------------------------\n`;
+            const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
+            
+            // Layout para a tela de VENDAS
+            if(p.nome.toLowerCase().includes(termo)) {
+                listaVenda.innerHTML += `
+                    <div class="card item-estoque">
+                        <div>
+                            <strong>${p.nome}</strong><br>
+                            <span class="badge ${classeEstoque}">Estoque: ${p.qtd}</span>
+                            <div style="font-size:14px; font-weight:bold; margin-top:5px">R$ ${p.venda.toFixed(2)}</div>
+                        </div>
+                        <button class="btn-venda" onclick="realizarVenda(${p.id})">VENDER 🛒</button>
+                    </div>`;
+                
+                // Layout para a tela de GERENCIAR (Cadastro)
+                listaGerenciar.innerHTML += `
+                    <div class="item-estoque">
+                        <span style="font-size:14px">${p.nome}</span>
+                        <div>
+                            <button style="background:var(--edit); padding:5px 10px" onclick="editar(${p.id})">✎</button>
+                            <button style="background:var(--danger); padding:5px 10px" onclick="deletar(${p.id})">🗑️</button>
+                        </div>
+                    </div>`;
+            }
         });
-        
-        rel += `\n*💵 RESUMO FINANCEIRO*`;
-        rel += `\nCusto das Mercadorias: R$ ${totalCusto.toFixed(2)}`;
-        rel += `\nLucro Líquido: R$ ${totalLucro.toFixed(2)}`;
-        rel += `\n\n*TOTAL EM CAIXA: R$ ${(totalCusto + totalLucro).toFixed(2)}*`;
-        
+
+        // Atualizar Resumo Financeiro
+        document.getElementById('resumoLucro').innerText = `R$ ${totalLucro.toFixed(2)}`;
+        document.getElementById('detalheFinanceiro').innerHTML = `
+            Investimento Recuperado: R$ ${totalCusto.toFixed(2)}<br>
+            <b>Total em Caixa: R$ ${(totalLucro + totalCusto).toFixed(2)}</b>
+        `;
+
+        // Renderizar Histórico
+        histLista.innerHTML = vendas.length === 0 ? '<p>Sem vendas.</p>' : vendas.map(v => `
+            <div class="hist-item">
+                <span><b>${v.nome}</b><br><small>${v.data}</small></span>
+                <span style="text-align:right">
+                    <span style="color:#27ae60">+ R$ ${v.lucro.toFixed(2)}</span><br>
+                    <small style="color:red">Custo: R$ ${v.custo.toFixed(2)}</small>
+                </span>
+            </div>
+        `).join('');
+    }
+
+    function enviarWhatsApp() {
+        let totalLucro = 0; let totalCusto = 0;
+        let rel = "*📊 RELATÓRIO DE VENDAS*\n\n";
+        db.forEach(p => {
+            totalLucro += p.lucroAcumulado; totalCusto += (p.custoAcumulado || 0);
+            if(p.vendidos > 0) rel += `✅ *${p.nome}*: ${p.vendidos} un. (Lucro: R$ ${p.lucroAcumulado.toFixed(2)})\n`;
+        });
+        rel += `\n--------------------------\n*💰 LUCRO LÍQUIDO: R$ ${totalLucro.toFixed(2)}*\n*💵 CAIXA TOTAL: R$ ${(totalLucro + totalCusto).toFixed(2)}*`;
         window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
     }
 
@@ -237,6 +271,12 @@
         document.getElementById('btn-principal').style.background = "var(--primary)";
         document.getElementById('btn-cancelar').style.display = "none";
         modoEdicao = false;
+    }
+
+    function limparHistorico() {
+        if(confirm("Limpar lista de vendas?")) {
+            vendas = []; localStorage.setItem('vendas_db', JSON.stringify(vendas)); renderizar();
+        }
     }
 
     renderizar();
