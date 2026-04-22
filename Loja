@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque & Lucro Pro</title>
+    <style>
+        :root { --primary: #25d366; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: var(--dark); }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-save { width: 100%; background: var(--primary); margin-top: 10px; }
+        .btn-update { width: 100%; background: var(--edit); margin-top: 10px; }
+        .btn-venda { background: var(--secondary); font-size: 13px; }
+        .item-estoque { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .info { flex-grow: 1; }
+        .badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; font-weight: bold; }
+        .badge-estoque { background: #e8f5e9; color: #2e7d32; }
+        .badge-baixo { background: #ffebee; color: #c62828; }
+        .lucro-val { color: #27ae60; font-weight: bold; font-size: 18px; }
+        #busca { background: #fff; border: 2px solid var(--secondary); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align:center">📊 Gestão de Vendas</h2>
+
+    <div class="card">
+        <h3 id="form-title" style="margin:0 0 10px 0">Nova Mercadoria</h3>
+        <input type="hidden" id="edit-id">
+        <input type="text" id="nome" placeholder="Nome do Produto">
+        <div style="display:flex; gap:5px">
+            <input type="number" id="custo" placeholder="Custo R$" step="0.01">
+            <input type="number" id="venda" placeholder="Venda R$" step="0.01">
+        </div>
+        <input type="number" id="qtd" placeholder="Qtd Inicial em Estoque">
+        <button class="btn-save" id="btn-principal" onclick="processarAcao()">Salvar no Banco</button>
+        <button id="btn-cancelar" onclick="limparCampos()" style="display:none; background:#bdc3c7; width:100%; margin-top:5px">Cancelar</button>
+    </div>
+
+    <div class="card">
+        <input type="text" id="busca" placeholder="🔍 Buscar produto..." onkeyup="renderizar()">
+        <div id="listaEstoque"></div>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <p style="margin:0">Lucro Total Acumulado</p>
+        <div id="resumoLucro" class="lucro-val">R$ 0,00</div>
+        <button onclick="enviarWhatsApp()" style="background: #075E54; width: 100%; margin-top: 15px;">
+            📱 Enviar Relatório WhatsApp
+        </button>
+        <small onclick="limparTudo()" style="color:red; cursor:pointer; display:block; margin-top:20px">Apagar todos os dados</small>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
+    let modoEdicao = false;
+
+    function processarAcao() {
+        const id = document.getElementById('edit-id').value;
+        const nome = document.getElementById('nome').value;
+        const custo = parseFloat(document.getElementById('custo').value);
+        const venda = parseFloat(document.getElementById('venda').value);
+        const qtd = parseInt(document.getElementById('qtd').value);
+
+        if (!nome || isNaN(custo) || isNaN(venda)) return alert("Preencha os valores!");
+
+        if (modoEdicao) {
+            const i = db.findIndex(p => p.id == id);
+            db[i] = { ...db[i], nome, custo, venda, qtd };
+            modoEdicao = false;
+        } else {
+            db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0 });
+        }
+        salvar();
+    }
+
+    function realizarVenda(id) {
+        const i = db.findIndex(p => p.id === id);
+        if (db[i].qtd > 0) {
+            db[i].qtd--;
+            db[i].vendidos++;
+            salvar();
+        } else { alert("Acabou o estoque!"); }
+    }
+
+    function editar(id) {
+        const p = db.find(prod => prod.id === id);
+        document.getElementById('edit-id').value = p.id;
+        document.getElementById('nome').value = p.nome;
+        document.getElementById('custo').value = p.custo;
+        document.getElementById('venda').value = p.venda;
+        document.getElementById('qtd').value = p.qtd;
+        document.getElementById('btn-principal').innerText = "Atualizar";
+        document.getElementById('btn-principal').className = "btn-update";
+        document.getElementById('btn-cancelar').style.display = "block";
+        modoEdicao = true;
+        window.scrollTo(0,0);
+    }
+
+    function salvar() {
+        localStorage.setItem('estoque_db', JSON.stringify(db));
+        limparCampos();
+        renderizar();
+    }
+
+    function renderizar() {
+        const lista = document.getElementById('listaEstoque');
+        const termo = document.getElementById('busca').value.toLowerCase();
+        lista.innerHTML = '';
+        let lucroAcumulado = 0;
+
+        db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
+            lucroAcumulado += (p.venda - p.custo) * p.vendidos;
+            const classeEstoque = p.qtd <= 3 ? 'badge-baixo' : 'badge-estoque';
+            
+            lista.innerHTML += `
+                <div class="item-estoque">
+                    <div class="info">
+                        <strong>${p.nome}</strong><br>
+                        <span class="badge ${classeEstoque}">Estoque: ${p.qtd}</span>
+                        <span class="badge" style="background:#eee">Vendas: ${p.vendidos}</span>
+                    </div>
+                    <div style="display:flex; gap:5px">
+                        <button style="background:var(--edit)" onclick="editar(${p.id})">✎</button>
+                        <button class="btn-venda" onclick="realizarVenda(${p.id})">VENDER</button>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('resumoLucro').innerText = `R$ ${lucroAcumulado.toFixed(2)}`;
+    }
+
+    function enviarWhatsApp() {
+        let rel = "*📋 RELATÓRIO DE VENDAS*\n\n";
+        let total = 0;
+        db.forEach(p => {
+            let l = (p.venda - p.custo) * p.vendidos;
+            total += l;
+            rel += `• *${p.nome}*: ${p.vendidos} vendas (Estoque: ${p.qtd})\n`;
+        });
+        rel += `\n*💰 LUCRO TOTAL: R$ ${total.toFixed(2)}*`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
+    }
+
+    function limparCampos() {
+        document.querySelectorAll('input').forEach(i => i.value = '');
+        document.getElementById('btn-principal').innerText = "Salvar no Banco";
+        document.getElementById('btn-principal').className = "btn-save";
+        document.getElementById('btn-cancelar').style.display = "none";
+        modoEdicao = false;
+    }
+
+    function limparTudo() {
+        if(confirm("Deseja resetar todo o sistema?")) { db = []; salvar(); }
+    }
+
+    renderizar();
+</script>
+</body>
+</html>
