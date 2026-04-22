@@ -7,279 +7,231 @@
     <link rel="apple-touch-icon" href="icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Estoque Pro - Menu</title>
+    <title>Estoque Pro Max - Painel</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        :root { --primary: #006437; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--dark); }
-        
-        /* Menu de Navegação */
-        .navbar { background: var(--primary); display: flex; justify-content: space-around; padding: 15px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .nav-item { color: white; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.8; }
-        .nav-item.active { opacity: 1; font-weight: bold; }
-        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        /* Paleta de Cores e Variáveis */
+        :root {
+            --primary-bg: #f5f7fa;
+            --dark: #2c3e50;
+            --light: #fff;
+            --shadow: rgba(0,0,0,0.1);
+            
+            /* Cores dos Botões (inspiradas na foto) */
+            --grad-vendas: linear-gradient(135deg, #2ecc71 0%, #34b7f1 100%); /* Verde -> Azul */
+            --grad-produtos: linear-gradient(135deg, #9b59b6 0%, #34495e 100%); /* Roxo -> Azul Escuro */
+            --grad-resumo: linear-gradient(135deg, #e67e22 0%, #ff6b6b 100%); /* Laranja -> Rosa Claro */
+            --grad-historico: linear-gradient(135deg, #d35400 0%, #c0392b 100%); /* Laranja Escuro -> Vermelho */
+        }
 
-        .container { max-width: 500px; margin: auto; padding: 15px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--primary-bg);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+            display: flex;
+            justify-content: center;
+        }
 
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        
-        .btn-main { width: 100%; background: var(--primary); margin-top: 10px; }
-        .btn-venda { background: var(--secondary); font-size: 13px; padding: 10px; }
-        .btn-wpp { background: #075E54; width: 100%; margin-top: 10px; }
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
 
-        .item-estoque { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; font-weight: bold; margin-right: 5px; display: inline-block; }
-        .badge-estoque { background: #e8f5e9; color: #2e7d32; }
-        .badge-alerta { background: #ffebee; color: #c62828; }
-        .lucro-val { color: #27ae60; font-weight: bold; font-size: 32px; margin: 10px 0; }
-        
-        .hist-item { font-size: 13px; padding: 10px; border-bottom: 1px dashed #ddd; display: flex; justify-content: space-between; }
+        /* Cabeçalho do App */
+        .app-header {
+            background-color: var(--light);
+            padding: 30px 20px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .app-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -0.5px;
+        }
+
+        .app-subtitle {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        /* Área de Conteúdo Central */
+        .content-area {
+            flex-grow: 1;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estilo do Botão Principal (A "Cara do App") */
+        .main-button {
+            width: 100%;
+            max-width: 350px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 20px;
+            border: none;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: white;
+        }
+
+        .main-button:last-child { margin-bottom: 0; }
+
+        /* Efeitos de Interação */
+        .main-button:active {
+            transform: translateY(3px) scale(0.98);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        /* Cores de Fundo dos Botões */
+        .btn-vendas { background: var(--grad-vendas); }
+        .btn-produtos { background: var(--grad-produtos); }
+        .btn-resumo { background: var(--grad-resumo); }
+        .btn-historico { background: var(--grad-historico); }
+
+        /* Ícones e Texto dentro do Botão */
+        .button-icon-container {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 15px;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-button i.material-icons {
+            font-size: 32px;
+            color: white;
+        }
+
+        .button-text-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .button-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .button-desc {
+            font-size: 13px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        /* Ícone de Seta (indicador de navegação) */
+        .button-arrow {
+            font-size: 24px;
+            opacity: 0.6;
+        }
+
+        /* Rodapé Simples */
+        .app-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: #95a5a6;
+        }
+
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="nav-item active" onclick="abrirAba('aba-vendas', this)"><span>🛒 Vendas</span></div>
-    <div class="nav-item" onclick="abrirAba('aba-cadastro', this)"><span>➕ Produto</span></div>
-    <div class="nav-item" onclick="abrirAba('aba-relatorio', this)"><span>📊 Resumo</span></div>
-    <div class="nav-item" onclick="abrirAba('aba-historico', this)"><span>🕒 Histórico</span></div>
-</nav>
+<div class="app-container">
+    
+    <header class="app-header">
+        <h1 class="app-title">PRO ESTOQUE</h1>
+        <p class="app-subtitle">Gestão Inteligente & Lucro Real</p>
+    </header>
 
-<div class="container">
-
-    <div id="aba-vendas" class="tab-content active">
-        <h3>Lista para Venda</h3>
-        <input type="text" id="busca" placeholder="🔍 Buscar produto..." onkeyup="renderizar()">
-        <div id="listaEstoqueVenda"></div>
-    </div>
-
-    <div id="aba-cadastro" class="tab-content">
-        <div class="card">
-            <h3 id="form-title" style="margin:0 0 10px 0">Novo Produto</h3>
-            <input type="hidden" id="edit-id">
-            <input type="text" id="nome" placeholder="Nome do Produto">
-            <div style="display:flex; gap:5px">
-                <input type="number" id="custo" placeholder="Custo R$" step="0.01">
-                <input type="number" id="venda" placeholder="Venda R$" step="0.01">
-            </div>
-            <input type="number" id="qtd" placeholder="Qtd Inicial">
-            <button class="btn-main" id="btn-principal" onclick="processarAcao()">Salvar no Sistema</button>
-            <button id="btn-cancelar" onclick="cancelarEdicao()" style="display:none; background:#bdc3c7; width:100%; margin-top:5px; color: #2c3e50;">Voltar</button>
-        </div>
+    <main class="content-area">
         
-        <h4>Gerenciar Produtos</h4>
-        <div id="listaGerenciar"></div>
-    </div>
+        <a href="vendas.html" class="main-button btn-vendas">
+            <div class="button-icon-container">
+                <i class="material-icons">shopping_cart</i>
+            </div>
+            <div class="button-text-container">
+                <span class="button-title">Realizar Vendas</span>
+                <span class="button-desc">Consultar e registrar vendas</span>
+            </div>
+            <i class="material-icons button-arrow">chevron_right</i>
+        </a>
 
-    <div id="aba-relatorio" class="tab-content">
-        <div class="card" style="text-align: center;">
-            <p style="margin:0">Lucro Acumulado</p>
-            <div id="resumoLucro" class="lucro-val">R$ 0,00</div>
-            <div id="detalheFinanceiro" style="font-size:14px; color:#7f8c8d; margin-bottom:15px"></div>
-            <button onclick="enviarWhatsApp()" class="btn-wpp">
-                📱 Enviar p/ WhatsApp
-            </button>
-        </div>
-    </div>
+        <a href="produtos.html" class="main-button btn-produtos">
+            <div class="button-icon-container">
+                <i class="material-icons">add_box</i>
+            </div>
+            <div class="button-text-container">
+                <span class="button-title">Meus Produtos</span>
+                <span class="button-desc">Gerenciar e cadastrar itens</span>
+            </div>
+            <i class="material-icons button-arrow">chevron_right</i>
+        </a>
 
-    <div id="aba-historico" class="tab-content">
-        <div class="card">
-            <h3 style="margin-top:0">Vendas Recentes</h3>
-            <div id="listaHistorico"></div>
-            <button onclick="limparHistorico()" style="background:none; color:var(--danger); font-size:11px; width:100%; margin-top:10px">Limpar Lista Visual</button>
-        </div>
-    </div>
+        <a href="resumo.html" class="main-button btn-resumo">
+            <div class="button-icon-container">
+                <i class="material-icons">bar_chart</i>
+            </div>
+            <div class="button-text-container">
+                <span class="button-title">Resumo Financeiro</span>
+                <span class="button-desc">Lucro acumulado e caixa</span>
+            </div>
+            <i class="material-icons button-arrow">chevron_right</i>
+        </a>
+
+        <a href="historico.html" class="main-button btn-historico">
+            <div class="button-icon-container">
+                <i class="material-icons">history</i>
+            </div>
+            <div class="button-text-container">
+                <span class="button-title">Histórico</span>
+                <span class="button-desc">Últimas vendas registradas</span>
+            </div>
+            <i class="material-icons button-arrow">chevron_right</i>
+        </a>
+
+    </main>
+
+    <footer class="app-footer">
+        <p class="footer-text">© 2024 Pro Estoque Max | Gestão Total</p>
+    </footer>
 
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
-    let vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
-    let modoEdicao = false;
-
-    // Lógica de Navegação
-    function abrirAba(idAba, elemento) {
-        document.querySelectorAll('.tab-content').forEach(aba => aba.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        
-        document.getElementById(idAba).classList.add('active');
-        elemento.classList.add('active');
-        renderizar();
+    // Se você quiser manter sua lógica de service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("Painel principal registrado!"))
+        .catch(err => console.log("Erro ao registrar service worker do painel: ", err));
     }
-
-    function processarAcao() {
-        const id = document.getElementById('edit-id').value;
-        const nome = document.getElementById('nome').value;
-        const custo = parseFloat(document.getElementById('custo').value);
-        const venda = parseFloat(document.getElementById('venda').value);
-        const qtd = parseInt(document.getElementById('qtd').value);
-
-        if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
-            alert("Preencha todos os campos!"); return;
-        }
-
-        if (modoEdicao) {
-            const i = db.findIndex(p => p.id == id);
-            db[i] = {...db[i], nome, custo, venda, qtd};
-            modoEdicao = false;
-        } else {
-            db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0, lucroAcumulado: 0, custoAcumulado: 0 });
-        }
-        salvarETelas();
-    }
-
-    function realizarVenda(id) {
-        const i = db.findIndex(p => p.id === id);
-        if (db[i].qtd > 0) {
-            const lucro = db[i].venda - db[i].custo;
-            const novaVenda = {
-                data: new Date().toLocaleString('pt-BR'),
-                nome: db[i].nome,
-                venda: db[i].venda,
-                custo: db[i].custo,
-                lucro: lucro
-            };
-            vendas.unshift(novaVenda);
-            if(vendas.length > 30) vendas.pop();
-
-            db[i].qtd--;
-            db[i].vendidos++;
-            db[i].lucroAcumulado += lucro;
-            db[i].custoAcumulado = (db[i].custoAcumulado || 0) + db[i].custo;
-            
-            localStorage.setItem('estoque_db', JSON.stringify(db));
-            localStorage.setItem('vendas_db', JSON.stringify(vendas));
-            renderizar();
-        } else {
-            alert("Estoque zerado!");
-        }
-    }
-
-    function editar(id) {
-        const p = db.find(prod => prod.id === id);
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('nome').value = p.nome;
-        document.getElementById('custo').value = p.custo;
-        document.getElementById('venda').value = p.venda;
-        document.getElementById('qtd').value = p.qtd;
-        document.getElementById('form-title').innerText = "Editando Produto";
-        document.getElementById('btn-principal').style.background = "var(--edit)";
-        document.getElementById('btn-cancelar').style.display = "block";
-        modoEdicao = true;
-        abrirAba('aba-cadastro', document.querySelectorAll('.nav-item')[1]);
-    }
-
-    function cancelarEdicao() {
-        limparCampos();
-        abrirAba('aba-vendas', document.querySelectorAll('.nav-item')[0]);
-    }
-
-    function deletar(id) {
-        if(confirm("Excluir este produto?")) {
-            db = db.filter(p => p.id !== id);
-            salvarETelas();
-        }
-    }
-
-    function salvarETelas() {
-        localStorage.setItem('estoque_db', JSON.stringify(db));
-        limparCampos();
-        renderizar();
-        abrirAba('aba-vendas', document.querySelectorAll('.nav-item')[0]);
-    }
-
-    function renderizar() {
-        const termo = document.getElementById('busca').value.toLowerCase();
-        const listaVenda = document.getElementById('listaEstoqueVenda');
-        const listaGerenciar = document.getElementById('listaGerenciar');
-        const histLista = document.getElementById('listaHistorico');
-        
-        listaVenda.innerHTML = '';
-        listaGerenciar.innerHTML = '';
-        let totalLucro = 0;
-        let totalCusto = 0;
-
-        db.forEach(p => {
-            totalLucro += p.lucroAcumulado;
-            totalCusto += (p.custoAcumulado || 0);
-            const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
-            
-            // Layout para a tela de VENDAS
-            if(p.nome.toLowerCase().includes(termo)) {
-                listaVenda.innerHTML += `
-                    <div class="card item-estoque">
-                        <div>
-                            <strong>${p.nome}</strong><br>
-                            <span class="badge ${classeEstoque}">Estoque: ${p.qtd}</span>
-                            <div style="font-size:14px; font-weight:bold; margin-top:5px">R$ ${p.venda.toFixed(2)}</div>
-                        </div>
-                        <button class="btn-venda" onclick="realizarVenda(${p.id})">VENDER 🛒</button>
-                    </div>`;
-                
-                // Layout para a tela de GERENCIAR (Cadastro)
-                listaGerenciar.innerHTML += `
-                    <div class="item-estoque">
-                        <span style="font-size:14px">${p.nome}</span>
-                        <div>
-                            <button style="background:var(--edit); padding:5px 10px" onclick="editar(${p.id})">✎</button>
-                            <button style="background:var(--danger); padding:5px 10px" onclick="deletar(${p.id})">🗑️</button>
-                        </div>
-                    </div>`;
-            }
-        });
-
-        // Atualizar Resumo Financeiro
-        document.getElementById('resumoLucro').innerText = `R$ ${totalLucro.toFixed(2)}`;
-        document.getElementById('detalheFinanceiro').innerHTML = `
-            Investimento Recuperado: R$ ${totalCusto.toFixed(2)}<br>
-            <b>Total em Caixa: R$ ${(totalLucro + totalCusto).toFixed(2)}</b>
-        `;
-
-        // Renderizar Histórico
-        histLista.innerHTML = vendas.length === 0 ? '<p>Sem vendas.</p>' : vendas.map(v => `
-            <div class="hist-item">
-                <span><b>${v.nome}</b><br><small>${v.data}</small></span>
-                <span style="text-align:right">
-                    <span style="color:#27ae60">+ R$ ${v.lucro.toFixed(2)}</span><br>
-                    <small style="color:red">Custo: R$ ${v.custo.toFixed(2)}</small>
-                </span>
-            </div>
-        `).join('');
-    }
-
-    function enviarWhatsApp() {
-        let totalLucro = 0; let totalCusto = 0;
-        let rel = "*📊 RELATÓRIO DE VENDAS*\n\n";
-        db.forEach(p => {
-            totalLucro += p.lucroAcumulado; totalCusto += (p.custoAcumulado || 0);
-            if(p.vendidos > 0) rel += `✅ *${p.nome}*: ${p.vendidos} un. (Lucro: R$ ${p.lucroAcumulado.toFixed(2)})\n`;
-        });
-        rel += `\n--------------------------\n*💰 LUCRO LÍQUIDO: R$ ${totalLucro.toFixed(2)}*\n*💵 CAIXA TOTAL: R$ ${(totalLucro + totalCusto).toFixed(2)}*`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
-    }
-
-    function limparCampos() {
-        document.getElementById('edit-id').value = '';
-        document.getElementById('nome').value = '';
-        document.getElementById('custo').value = '';
-        document.getElementById('venda').value = '';
-        document.getElementById('qtd').value = '';
-        document.getElementById('form-title').innerText = "Novo Produto";
-        document.getElementById('btn-principal').style.background = "var(--primary)";
-        document.getElementById('btn-cancelar').style.display = "none";
-        modoEdicao = false;
-    }
-
-    function limparHistorico() {
-        if(confirm("Limpar lista de vendas?")) {
-            vendas = []; localStorage.setItem('vendas_db', JSON.stringify(vendas)); renderizar();
-        }
-    }
-
-    renderizar();
 </script>
+
 </body>
 </html>
