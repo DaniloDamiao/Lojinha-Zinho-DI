@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Histórico - Estoque Pro</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d35400;
+            --secondary: #c0392b;
+            --bg: #f5f7fa;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+
+        .header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
+
+        .container { max-width: 500px; margin: auto; padding: 20px; }
+
+        .title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Lista de Vendas */
+        .venda-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 4px solid #c0392b;
+        }
+
+        .venda-info b { display: block; font-size: 16px; margin-bottom: 2px; }
+        .venda-info small { color: #95a5a6; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+
+        .venda-valores { text-align: right; }
+        .val-lucro { color: #27ae60; font-weight: bold; font-size: 15px; display: block; }
+        .val-venda { color: #7f8c8d; font-size: 12px; }
+
+        /* Botão Limpar */
+        .btn-limpar {
+            width: 100%;
+            background: none;
+            border: 1px dashed #bdc3c7;
+            color: #95a5a6;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #bdc3c7;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a href="index.html" class="btn-back">
+        <i class="material-icons">arrow_back</i>
+    </a>
+    <h3 style="margin:0">Histórico de Vendas</h3>
+</div>
+
+<div class="container">
+    
+    <div class="title-section">
+        <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d;">0 vendas registradas</span>
+    </div>
+
+    <div id="listaHistorico">
+        </div>
+
+    <button class="btn-limpar" onclick="limparHistorico()">
+        <i class="material-icons">delete_sweep</i> Limpar Histórico Visual
+    </button>
+
+</div>
+
+<script>
+    function renderizarHistorico() {
+        const vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
+        const lista = document.getElementById('listaHistorico');
+        const contador = document.getElementById('contador-vendas');
+
+        contador.innerText = `${vendas.length} vendas registradas`;
+
+        if (vendas.length === 0) {
+            lista.innerHTML = `
+                <div class="empty-state">
+                    <i class="material-icons">history_toggle_off</i>
+                    <p>Nenhuma venda encontrada no histórico.</p>
+                </div>`;
+            return;
+        }
+
+        lista.innerHTML = vendas.map(v => `
+            <div class="venda-card">
+                <div class="venda-info">
+                    <b>${v.nome}</b>
+                    <small><i class="material-icons" style="font-size:12px">schedule</i> ${v.data}</small>
+                </div>
+                <div class="venda-valores">
+                    <span class="val-lucro">+ R$ ${v.lucro.toFixed(2)}</span>
+                    <span class="val-venda">Venda: R$ ${v.venda.toFixed(2)}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function limparHistorico() {
+        if (confirm("Deseja limpar a lista visual de histórico? Isso não altera o seu lucro total acumulado nos produtos.")) {
+            localStorage.setItem('vendas_db', JSON.stringify([]));
+            renderizarHistorico();
+        }
+    }
+
+    // Inicializa
+    renderizarHistorico();
+</script>
+
+</body>
+</html>
