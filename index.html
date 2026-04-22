@@ -7,7 +7,7 @@
     <link rel="apple-touch-icon" href="icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Estoque Pro + Histórico</title>
+    <title>Estoque Pro + Custos</title>
     <style>
         :root { --primary: #006437; --secondary: #34b7f1; --danger: #e74c3c; --edit: #f39c12; --dark: #2c3e50; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--dark); }
@@ -26,12 +26,13 @@
         .sub-info { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
         .hist-item { font-size: 13px; padding: 8px 0; border-bottom: 1px dashed #ddd; display: flex; justify-content: space-between; }
         .venda-data { color: #95a5a6; font-size: 11px; }
+        .custo-txt { color: #e74c3c; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="text-align:center">🟢 Gestão & Histórico</h2>
+    <h2 style="text-align:center">🟢 Gestão de Lucro Real</h2>
 
     <div class="card">
         <h3 id="form-title" style="margin:0 0 10px 0">Novo Produto</h3>
@@ -60,16 +61,15 @@
     </div>
 
     <div class="card">
-        <h3 style="margin-top:0">🕒 Últimas Vendas</h3>
+        <h3 style="margin-top:0">🕒 Histórico de Vendas</h3>
         <div id="listaHistorico">
-            <p style="color:#95a5a6; font-size:13px">Nenhuma venda realizada ainda.</p>
+            <p style="color:#95a5a6; font-size:13px">Nenhuma venda realizada.</p>
         </div>
-        <button onclick="limparHistorico()" style="background:none; color:var(--danger); font-size:11px; width:100%; margin-top:10px">Limpar Histórico</button>
+        <button onclick="limparHistorico()" style="background:none; color:var(--danger); font-size:11px; width:100%; margin-top:10px">Limpar Histórico Visual</button>
     </div>
 </div>
 
 <script>
-    // Banco de Dados (Estoque e Vendas)
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
     let vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
     let modoEdicao = false;
@@ -82,7 +82,7 @@
         const qtd = parseInt(document.getElementById('qtd').value);
 
         if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
-            alert("Preencha todos os campos!"); return;
+            alert("Preencha tudo corretamente!"); return;
         }
 
         if (modoEdicao) {
@@ -90,7 +90,7 @@
             db[i] = {...db[i], nome, custo, venda, qtd};
             modoEdicao = false;
         } else {
-            db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0, lucroAcumulado: 0 });
+            db.push({ id: Date.now(), nome, custo, venda, qtd, vendidos: 0, lucroAcumulado: 0, custoAcumulado: 0 });
         }
         salvarTudo();
     }
@@ -98,25 +98,30 @@
     function realizarVenda(id) {
         const i = db.findIndex(p => p.id === id);
         if (db[i].qtd > 0) {
-            const lucroUnidade = db[i].venda - db[i].custo;
+            const custoNaHora = db[i].custo;
+            const vendaNaHora = db[i].venda;
+            const lucroNaHora = vendaNaHora - custoNaHora;
             
-            // Registrar no histórico
             const novaVenda = {
                 data: new Date().toLocaleString('pt-BR'),
                 nome: db[i].nome,
-                lucro: lucroUnidade
+                venda: vendaNaHora,
+                custo: custoNaHora,
+                lucro: lucroNaHora
             };
-            vendas.unshift(novaVenda); // Adiciona no topo da lista
-            if(vendas.length > 20) vendas.pop(); // Mantém apenas as últimas 20 no histórico visual
+            
+            vendas.unshift(novaVenda);
+            if(vendas.length > 30) vendas.pop(); 
 
-            // Atualizar produto
             db[i].qtd--;
             db[i].vendidos++;
-            db[i].lucroAcumulado += lucroUnidade;
+            db[i].lucroAcumulado += lucroNaHora;
+            // Registramos também quanto custou o que foi vendido
+            db[i].custoAcumulado = (db[i].custoAcumulado || 0) + custoNaHora;
             
             salvarTudo();
         } else {
-            alert("Estoque esgotado!");
+            alert("Estoque zerado!");
         }
     }
 
@@ -135,7 +140,7 @@
     }
 
     function deletar(id) {
-        if(confirm("Excluir este produto permanentemente?")) {
+        if(confirm("Excluir produto e histórico?")) {
             db = db.filter(p => p.id !== id);
             salvarTudo();
         }
@@ -154,7 +159,6 @@
         lista.innerHTML = '';
         let totalLucroGeral = 0;
 
-        // Renderizar Estoque
         db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
             totalLucroGeral += p.lucroAcumulado;
             const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
@@ -165,7 +169,7 @@
                         <strong>${p.nome}</strong><br>
                         <span class="badge ${classeEstoque}">Est: ${p.qtd}</span>
                         <span class="badge" style="background:#eee">Vend: ${p.vendidos}</span>
-                        <div class="sub-info">Lucro Real: R$ ${p.lucroAcumulado.toFixed(2)}</div>
+                        <div class="sub-info">Lucro: R$ ${p.lucroAcumulado.toFixed(2)}</div>
                     </div>
                     <div style="display:flex; gap:5px">
                         <button style="background:var(--edit); padding: 8px;" onclick="editar(${p.id})">✎</button>
@@ -176,17 +180,16 @@
         });
         document.getElementById('resumoLucro').innerText = `R$ ${totalLucroGeral.toFixed(2)}`;
 
-        // Renderizar Histórico
         const histLista = document.getElementById('listaHistorico');
         if(vendas.length === 0) {
-            histLista.innerHTML = '<p style="color:#95a5a6; font-size:13px">Nenhuma venda registrada.</p>';
+            histLista.innerHTML = '<p style="color:#95a5a6; font-size:13px">Nenhuma venda.</p>';
         } else {
             histLista.innerHTML = vendas.map(v => `
                 <div class="hist-item">
-                    <span><b>${v.nome}</b></span>
+                    <span><b>${v.nome}</b><br><small class="venda-data">${v.data}</small></span>
                     <span style="text-align:right">
-                        <span style="color:#27ae60">+R$ ${v.lucro.toFixed(2)}</span><br>
-                        <span class="venda-data">${v.data}</span>
+                        <span style="color:#27ae60">Lucro: R$ ${v.lucro.toFixed(2)}</span><br>
+                        <span class="custo-txt">Custo: R$ ${v.custo.toFixed(2)}</span>
                     </span>
                 </div>
             `).join('');
@@ -194,7 +197,7 @@
     }
 
     function limparHistorico() {
-        if(confirm("Limpar apenas a lista visual de vendas recentes?")) {
+        if(confirm("Limpar lista visual?")) {
             vendas = [];
             localStorage.setItem('vendas_db', JSON.stringify(vendas));
             renderizar();
@@ -202,16 +205,25 @@
     }
 
     function enviarWhatsApp() {
-        let total = 0;
-        let rel = "*📊 RELATÓRIO DE ESTOQUE E LUCRO*\n\n";
+        let totalLucro = 0;
+        let totalCusto = 0;
+        let rel = "*📊 RELATÓRIO DETALHADO*\n\n";
+        
         db.forEach(p => {
-            total += p.lucroAcumulado;
+            totalLucro += p.lucroAcumulado;
+            totalCusto += (p.custoAcumulado || 0);
             rel += `📦 *${p.nome.toUpperCase()}*\n`;
-            rel += `Qtd: ${p.qtd} | Vendidos: ${p.vendidos}\n`;
-            rel += `Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
+            rel += `Vendidos: ${p.vendidos} un.\n`;
+            rel += `Custo Total: R$ ${(p.custoAcumulado || 0).toFixed(2)}\n`;
+            rel += `Lucro Total: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
             rel += `--------------------------\n`;
         });
-        rel += `\n*💰 LUCRO TOTAL: R$ ${total.toFixed(2)}*`;
+        
+        rel += `\n*💵 RESUMO FINANCEIRO*`;
+        rel += `\nCusto das Mercadorias: R$ ${totalCusto.toFixed(2)}`;
+        rel += `\nLucro Líquido: R$ ${totalLucro.toFixed(2)}`;
+        rel += `\n\n*TOTAL EM CAIXA: R$ ${(totalCusto + totalLucro).toFixed(2)}*`;
+        
         window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
     }
 
