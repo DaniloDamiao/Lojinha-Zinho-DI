@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cadastro - Estoque Pro</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #9b59b6; /* Roxo conforme o menu */
+            --success: #2ecc71;
+            --bg: #f5f7fa;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+
+        /* Topo */
+        .header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
+
+        .container { max-width: 500px; margin: auto; padding: 20px; }
+
+        /* Formulário */
+        .card-form {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        h3 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #7f8c8d; margin-bottom: 5px; margin-left: 5px; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background: #f9f9f9;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); background: white; }
+
+        .row { display: flex; gap: 10px; }
+
+        /* Botões */
+        .btn-save {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #9b59b6 0%, #34495e 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-cancel {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: #95a5a6;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* Lista de Produtos Cadastrados */
+        .item-registrado {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid var(--primary);
+        }
+
+        .item-registrado span { font-weight: 600; }
+        .item-registrado small { color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a href="index.html" class="btn-back">
+        <i class="material-icons">arrow_back</i>
+    </a>
+    <h3 style="margin:0; color: var
