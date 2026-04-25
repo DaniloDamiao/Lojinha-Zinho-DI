@@ -2,545 +2,260 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Vendas - Estoque Pro</title>
-
+    <title>Cadastro - Estoque Pro</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
     <style>
-
         :root {
-
-            --primary: #006437;
-
-            --secondary: #34b7f1;
-
-            --danger: #e74c3c;
-
-            --edit: #f39c12;
-
+            --primary: #9b59b6; /* Roxo conforme o menu */
+            --success: #2ecc71;
             --bg: #f5f7fa;
-
             --dark: #2c3e50;
-
         }
-
-
 
         body {
-
             font-family: 'Segoe UI', sans-serif;
-
             background: var(--bg);
-
             margin: 0;
-
             padding: 0;
-
             color: var(--dark);
-
         }
 
-
-
+        /* Topo */
         .header {
-
             background: white;
-
             padding: 15px 20px;
-
             display: flex;
-
             align-items: center;
-
-            justify-content: space-between;
-
+            gap: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-
             position: sticky;
-
             top: 0;
-
             z-index: 100;
-
         }
-
-
 
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
 
-        .lucro-hoje { text-align: right; }
-
-        .lucro-hoje span { display: block; font-size: 10px; color: #7f8c8d; text-transform: uppercase; }
-
-        .lucro-hoje strong { color: #27ae60; font-size: 18px; }
-
-
-
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-
-
-        /* Status de Conexão */
-
-        #statusCloud {
-
-            font-size: 11px;
-
-            text-align: center;
-
-            padding: 8px;
-
-            background: #dfe6e9;
-
-            color: #636e72;
-
-            border-radius: 10px;
-
-            margin-bottom: 15px;
-
-            display: none;
-
-            font-weight: bold;
-
-        }
-
-
-
-        .search-box {
-
+        /* Formulário */
+        .card-form {
             background: white;
-
-            border-radius: 15px;
-
-            display: flex;
-
-            align-items: center;
-
-            padding: 5px 15px;
-
-            margin-bottom: 20px;
-
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
         }
 
+        h3 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 
-
-        .search-box input {
-
-            border: none;
-
-            padding: 12px;
-
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #7f8c8d; margin-bottom: 5px; margin-left: 5px; }
+        
+        input {
             width: 100%;
-
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            box-sizing: border-box;
             font-size: 16px;
-
+            background: #f9f9f9;
             outline: none;
-
+            transition: 0.3s;
         }
 
+        input:focus { border-color: var(--primary); background: white; }
 
+        .row { display: flex; gap: 10px; }
 
-        .item-card {
-
-            background: white;
-
-            border-radius: 15px;
-
+        /* Botões */
+        .btn-save {
+            width: 100%;
             padding: 15px;
-
-            margin-bottom: 15px;
-
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #9b59b6 0%, #34495e 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
             display: flex;
-
-            flex-direction: column;
-
+            align-items: center;
+            justify-content: center;
             gap: 10px;
-
+            margin-top: 10px;
         }
 
+        .btn-cancel {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: #95a5a6;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
 
+        /* Lista de Produtos Cadastrados */
+        .item-registrado {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid var(--primary);
+        }
 
-        .item-info { display: flex; justify-content: space-between; align-items: flex-start; }
-
-        .item-name { font-size: 18px; font-weight: bold; margin: 0; }
-
-        .badge { font-size: 11px; padding: 4px 8px; border-radius: 8px; font-weight: bold; }
-
-        .badge-estoque { background: #e8f5e9; color: #2e7d32; }
-
-        .badge-alerta { background: #ffebee; color: #c62828; }
-
-        .price-tag { font-size: 20px; font-weight: 800; color: var(--primary); margin: 5px 0; }
-
-
-
-        .actions { display: flex; gap: 8px; border-top: 1px solid #eee; padding-top: 10px; }
-
-        button { border: none; border-radius: 10px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-
-        .btn-venda { flex-grow: 2; background: var(--secondary); color: white; padding: 12px; gap: 8px; }
-
-        .btn-edit { background: #f1f3f5; color: var(--edit); padding: 12px; width: 50px; }
-
-        .btn-del { background: #f1f3f5; color: var(--danger); padding: 12px; width: 50px; }
-
-        button:active { transform: scale(0.95); opacity: 0.8; }
-
+        .item-registrado span { font-weight: 600; }
+        .item-registrado small { color: #7f8c8d; }
     </style>
-
 </head>
-
 <body>
 
-
-
 <div class="header">
-
     <a href="index.html" class="btn-back">
-
         <i class="material-icons">arrow_back</i>
-
     </a>
-
-    <h3 style="margin:0">Vendas</h3>
-
-    <div class="lucro-hoje">
-
-        <span>Lucro Total</span>
-
-        <strong id="totalLucro">R$ 0,00</strong>
-
-    </div>
-
+    <h3 style="margin:0; color: var(--dark)">Gerenciar Produtos</h3>
 </div>
-
-
 
 <div class="container">
+    <div class="card-form">
+        <h3 id="titulo-form"><i class="material-icons">add_circle</i> Novo Produto</h3>
+        
+        <input type="hidden" id="edit-id">
+        
+        <div class="input-group">
+            <label>Nome do Produto</label>
+            <input type="text" id="nome" placeholder="Ex: Camiseta Branca">
+        </div>
 
-    <div id="statusCloud">☁️ Sincronizando produtos...</div>
+        <div class="row">
+            <div class="input-group" style="flex: 1;">
+                <label>Preço Custo (R$)</label>
+                <input type="number" id="custo" step="0.01" placeholder="0.00">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>Preço Venda (R$)</label>
+                <input type="number" id="venda" step="0.01" placeholder="0.00">
+            </div>
+        </div>
 
+        <div class="input-group">
+            <label>Quantidade em Estoque</label>
+            <input type="number" id="qtd" placeholder="0">
+        </div>
 
-
-    <div class="search-box">
-
-        <i class="material-icons" style="color:#bdc3c7">search</i>
-
-        <input type="text" id="busca" placeholder="Buscar produto..." onkeyup="renderizar()">
-
+        <button class="btn-save" onclick="salvarProduto()">
+            <i class="material-icons">save</i> <span id="texto-botao">Salvar Produto</span>
+        </button>
+        
+        <button id="btn-cancelar" class="btn-cancel" onclick="limparCampos()" style="display:none;">
+            Cancelar Edição
+        </button>
     </div>
 
-
-
-    <div id="listaProdutos"></div>
-
+    <h4>Produtos Cadastrados</h4>
+    <div id="listaGerenciar">
+        </div>
 </div>
 
-
-
 <script>
-
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
-
-
-
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
 
-    let vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
-
-
-
-    // Iniciar carregando dados da nuvem
-
+    // Verificar se veio da tela de vendas para editar
     window.onload = function() {
-
-        carregarDadosDaNuvem();
-
-    };
-
-
-
-    async function carregarDadosDaNuvem() {
-
-        const statusDiv = document.getElementById('statusCloud');
-
-        statusDiv.style.display = "block";
-
-        
-
-        try {
-
-            const response = await fetch(URL_GOOGLE);
-
-            const dadosNuvem = await response.json();
-
-            
-
-            if (dadosNuvem && dadosNuvem.length > 0) {
-
-                // Mapear os dados para garantir que os números sejam números
-
-                db = dadosNuvem.map(p => ({
-
-                    id: p.id,
-
-                    nome: p.nome,
-
-                    custo: parseFloat(p.custo) || 0,
-
-                    venda: parseFloat(p.venda) || 0,
-
-                    qtd: parseInt(p.qtd) || 0,
-
-                    lucroAcumulado: parseFloat(p.lucroacumulado) || 0,
-
-                    vendidos: parseInt(p.vendidos) || 0
-
-                }));
-
-                localStorage.setItem('estoque_db', JSON.stringify(db));
-
-                statusDiv.innerText = "✅ Produtos atualizados!";
-
-            }
-
-        } catch (error) {
-
-            console.error("Erro ao carregar nuvem:", error);
-
-            statusDiv.innerText = "⚠️ Modo offline (dados locais)";
-
+        const idParaEditar = localStorage.getItem('produto_para_editar');
+        if (idParaEditar) {
+            prepararEdicao(parseInt(idParaEditar));
+            localStorage.removeItem('produto_para_editar'); // Limpa após usar
         }
-
-        
-
         renderizar();
-
-        setTimeout(() => statusDiv.style.display = "none", 2000);
-
     }
 
-
-
-    function renderizar() {
-
-        const lista = document.getElementById('listaProdutos');
-
-        const termo = document.getElementById('busca').value.toLowerCase();
-
-        let lucroTotal = 0;
-
-        
-
-        lista.innerHTML = '';
-
-
-
-        db.filter(p => p.nome.toLowerCase().includes(termo)).forEach(p => {
-
-            lucroTotal += p.lucroAcumulado || 0;
-
-            const classeEstoque = p.qtd <= 3 ? 'badge-alerta' : 'badge-estoque';
-
-            
-
-            lista.innerHTML += `
-
-                <div class="item-card">
-
-                    <div class="item-info">
-
-                        <div>
-
-                            <p class="item-name">${p.nome}</p>
-
-                            <span class="badge ${classeEstoque}">Estoque: ${p.qtd}</span>
-
-                        </div>
-
-                        <div style="text-align:right">
-
-                            <div class="price-tag">R$ ${p.venda.toFixed(2)}</div>
-
-                            <small style="color:#95a5a6; font-size:10px">Custo: R$ ${p.custo.toFixed(2)}</small>
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <div class="actions">
-
-                        <button class="btn-edit" onclick="editar(${p.id})" title="Editar">
-
-                            <i class="material-icons">edit</i>
-
-                        </button>
-
-                        <button class="btn-del" onclick="deletar(${p.id})" title="Excluir">
-
-                            <i class="material-icons">delete</i>
-
-                        </button>
-
-                        <button class="btn-venda" onclick="realizarVenda(${p.id})">
-
-                            <i class="material-icons">shopping_cart</i> VENDER
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        });
-
-
-
-        document.getElementById('totalLucro').innerText = `R$ ${lucroTotal.toFixed(2)}`;
-
-    }
-
-
-
-    async function realizarVenda(id) {
-
-        const i = db.findIndex(p => p.id === id);
-
-        if (db[i].qtd > 0) {
-
-            const lucroUnidade = db[i].venda - db[i].custo;
-
-            const statusDiv = document.getElementById('statusCloud');
-
-            
-
-            const novaVenda = {
-
-                data: new Date().toLocaleString('pt-BR'),
-
-                nome: db[i].nome,
-
-                venda: db[i].venda,
-
-                custo: db[i].custo,
-
-                lucro: lucroUnidade
-
-            };
-
-
-
-            // 1. Atualização Local
-
-            vendas.unshift(novaVenda);
-
-            db[i].qtd--;
-
-            db[i].vendidos = (db[i].vendidos || 0) + 1;
-
-            db[i].lucroAcumulado = (db[i].lucroAcumulado || 0) + lucroUnidade;
-
-            salvarLocal();
-
-
-
-            // 2. Envio para Planilha
-
-            statusDiv.style.display = "block";
-
-            statusDiv.innerText = "☁️ Registrando venda na nuvem...";
-
-
-
-            try {
-
-                await fetch(URL_GOOGLE, {
-
-                    method: 'POST',
-
-                    mode: 'no-cors', // Mantido no-cors para evitar erros de redirecionamento do Google
-
-                    body: JSON.stringify({
-
-                        tipo: "VENDA",
-
-                        ...novaVenda
-
-                    })
-
-                });
-
-                statusDiv.innerText = "✅ Venda sincronizada!";
-
-            } catch (error) {
-
-                statusDiv.innerText = "⚠️ Erro na nuvem (Salvo no celular)";
-
-            }
-
-            
-
-            setTimeout(() => statusDiv.style.display = "none", 2000);
-
-
-
+    function salvarProduto() {
+        const id = document.getElementById('edit-id').value;
+        const nome = document.getElementById('nome').value;
+        const custo = parseFloat(document.getElementById('custo').value);
+        const venda = parseFloat(document.getElementById('venda').value);
+        const qtd = parseInt(document.getElementById('qtd').value);
+
+        if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
+            alert("Por favor, preencha todos os campos corretamente.");
+            return;
+        }
+
+        if (id) {
+            // Editando existente
+            const i = db.findIndex(p => p.id == id);
+            db[i].nome = nome;
+            db[i].custo = custo;
+            db[i].venda = venda;
+            db[i].qtd = qtd;
         } else {
-
-            alert("⚠️ Estoque esgotado!");
-
+            // Novo produto
+            db.push({
+                id: Date.now(),
+                nome: nome,
+                custo: custo,
+                venda: venda,
+                qtd: qtd,
+                vendidos: 0,
+                lucroAcumulado: 0,
+                custoAcumulado: 0
+            });
         }
-
-    }
-
-
-
-    function editar(id) {
-
-        localStorage.setItem('produto_para_editar', id);
-
-        window.location.href = 'gerenciar.html'; // Ajustado para o nome da sua pagina de gerenciamento
-
-    }
-
-
-
-    function deletar(id) {
-
-        if (confirm("Excluir este produto?")) {
-
-            db = db.filter(p => p.id !== id);
-
-            salvarLocal();
-
-        }
-
-    }
-
-
-
-    function salvarLocal() {
 
         localStorage.setItem('estoque_db', JSON.stringify(db));
-
-        localStorage.setItem('vendas_db', JSON.stringify(vendas));
-
+        limparCampos();
         renderizar();
-
+        alert("Sucesso! Produto guardado.");
     }
 
+    function prepararEdicao(id) {
+        const p = db.find(prod => prod.id === id);
+        if(!p) return;
+
+        document.getElementById('edit-id').value = p.id;
+        document.getElementById('nome').value = p.nome;
+        document.getElementById('custo').value = p.custo;
+        document.getElementById('venda').value = p.venda;
+        document.getElementById('qtd').value = p.qtd;
+
+        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">edit</i> Editando Produto';
+        document.getElementById('texto-botao').innerText = "Atualizar Cadastro";
+        document.getElementById('btn-cancelar').style.display = "block";
+    }
+
+    function limparCampos() {
+        document.getElementById('edit-id').value = '';
+        document.getElementById('nome').value = '';
+        document.getElementById('custo').value = '';
+        document.getElementById('venda').value = '';
+        document.getElementById('qtd').value = '';
+        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">add_circle</i> Novo Produto';
+        document.getElementById('texto-botao').innerText = "Salvar Produto";
+        document.getElementById('btn-cancelar').style.display = "none";
+    }
+
+    function renderizar() {
+        const lista = document.getElementById('listaGerenciar');
+        lista.innerHTML = db.map(p => `
+            <div class="item-registrado">
+                <div>
+                    <span>${p.nome}</span><br>
+                    <small>Custo: R$ ${p.custo.toFixed(2)} | Venda: R$ ${p.venda.toFixed(2)}</small>
+                </div>
+                <div style="text-align:right">
+                    <span style="color:var(--primary)">${p.qtd} un</span>
+                </div>
+            </div>
+        `).join('');
+    }
 </script>
 
 </body>
-
 </html>
