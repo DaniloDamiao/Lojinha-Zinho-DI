@@ -38,6 +38,19 @@
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
+        /* Status Cloud */
+        #statusCloud {
+            font-size: 11px;
+            text-align: center;
+            padding: 8px;
+            background: #e0d0ea;
+            color: #6c3483;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: bold;
+        }
+
         .card-form {
             background: white;
             border-radius: 20px;
@@ -140,6 +153,8 @@
 </div>
 
 <div class="container">
+    <div id="statusCloud">☁️ Sincronizando com Google Sheets...</div>
+
     <div class="card-form">
         <h3 id="titulo-form"><i class="material-icons">add_circle</i> Novo Produto</h3>
         <input type="hidden" id="edit-id">
@@ -165,7 +180,7 @@
             <input type="number" id="qtd" placeholder="0">
         </div>
 
-        <button type="button" class="btn-save" onclick="salvarProduto()">
+        <button type="button" class="btn-save" id="btnSalvar" onclick="salvarProduto()">
             <i class="material-icons">save</i> <span id="texto-botao">Salvar Produto</span>
         </button>
         
@@ -192,44 +207,71 @@
 </button>
 
 <script>
-    // Banco de dados Global
+    // COLE AQUI O MESMO URL QUE USOU NA PÁGINA DE VENDAS
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
+
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
     let selecionados = new Set();
 
-    // Iniciar
     window.onload = function() {
         renderizar();
     };
 
-    function salvarProduto() {
+    async function salvarProduto() {
         const idField = document.getElementById('edit-id').value;
         const nome = document.getElementById('nome').value.trim();
         const custo = parseFloat(document.getElementById('custo').value);
         const venda = parseFloat(document.getElementById('venda').value);
         const qtd = parseInt(document.getElementById('qtd').value);
+        const statusDiv = document.getElementById('statusCloud');
 
         if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
             alert("Preencha todos os campos!");
             return;
         }
 
+        let produtoFinal;
+
         if (idField) {
             const i = db.findIndex(p => p.id == idField);
             if (i !== -1) {
                 db[i] = { ...db[i], nome, custo, venda, qtd };
+                produtoFinal = db[i];
             }
         } else {
-            db.push({
+            produtoFinal = {
                 id: Date.now(),
                 nome, custo, venda, qtd,
-                vendidos: 0, lucroAcumulado: 0, custoAcumulado: 0
-            });
+                vendidos: 0, lucroAcumulado: 0, custoAcumulado: 0,
+                dataCadastro: new Date().toLocaleString('pt-BR')
+            };
+            db.push(produtoFinal);
         }
 
+        // 1. Salva no Celular
         localStorage.setItem('estoque_db', JSON.stringify(db));
+        
+        // 2. Envia para a Planilha (Nuvem)
+        statusDiv.style.display = "block";
+        statusDiv.innerText = "☁️ Enviando para nuvem...";
+
+        try {
+            await fetch(URL_GOOGLE, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    tipo: "CADASTRO_PRODUTO", // Flag para você saber na planilha que é um cadastro
+                    ...produtoFinal
+                })
+            });
+            statusDiv.innerText = "✅ Salvo na Planilha!";
+            setTimeout(() => statusDiv.style.display = "none", 2000);
+        } catch (error) {
+            statusDiv.innerText = "⚠️ Erro na nuvem (Salvo apenas local)";
+        }
+
         limparCampos();
         renderizar();
-        alert("Poduto cadastrado com sucesso!");
     }
 
     function renderizar() {
