@@ -194,39 +194,48 @@
         const btnRelatorio = document.getElementById('btnRelatorio');
         
         const buscaNome = document.getElementById('filtroNome').value.toLowerCase().trim();
-        const dataInicio = document.getElementById('filtroDataInicio').value;
+        const dataInicio = document.getElementById('filtroDataInicio').value; 
         const dataFim = document.getElementById('filtroDataFim').value;
 
         vendasAtuaisExibidas = vendas.filter(v => {
-            // 1. Filtro Nome
+            // 1. Filtro por Nome
             const matchNome = v.nome.toLowerCase().includes(buscaNome);
             
-            // 2. Filtro Data (Conversão Segura para Comparação)
-            try {
-                const dataLimpa = v.data.trim().split(' ')[0]; 
-                const partes = dataLimpa.split('/');
-                
-                if (partes.length === 3) {
-                    const dia = partes[0].padStart(2, '0');
-                    const mes = partes[1].padStart(2, '0');
-                    const ano = partes[2];
-                    const dataVendaISO = `${ano}-${mes}-${dia}`;
+            // 2. Lógica Inteligente de Data
+            let matchData = true;
+            if (dataInicio || dataFim) {
+                try {
+                    // Pega a parte da data e limpa espaços
+                    const apenasData = v.data.trim().split(' ')[0];
+                    // Detecta se o separador é barra ou traço
+                    const separador = apenasData.includes('/') ? '/' : '-';
+                    const partes = apenasData.split(separador);
                     
-                    if (dataInicio && dataVendaISO < dataInicio) return false;
-                    if (dataFim && dataVendaISO > dataFim) return false;
+                    let dataVendaISO = "";
+                    
+                    if (partes[0].length === 4) { 
+                        // Formato YYYY-MM-DD
+                        dataVendaISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
+                    } else {
+                        // Formato DD-MM-YYYY
+                        dataVendaISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+                    }
+
+                    if (dataInicio && dataVendaISO < dataInicio) matchData = false;
+                    if (dataFim && dataVendaISO > dataFim) matchData = false;
+                } catch (e) {
+                    matchData = false;
                 }
-            } catch (e) {
-                console.error("Erro ao processar data da venda", e);
             }
 
-            return matchNome;
+            return matchNome && matchData;
         });
 
         contador.innerText = `${vendasAtuaisExibidas.length} venda(s) encontrada(s)`;
         btnRelatorio.style.display = vendasAtuaisExibidas.length > 0 ? "flex" : "none";
 
         if (vendasAtuaisExibidas.length === 0) {
-            lista.innerHTML = `<div class="empty-state"><i class="material-icons">search_off</i><p>Nenhuma venda encontrada.</p></div>`;
+            lista.innerHTML = `<div class="empty-state"><i class="material-icons">search_off</i><p>Nenhuma venda encontrada para este filtro.</p></div>`;
             return;
         }
 
@@ -265,7 +274,7 @@
     }
 
     function limparHistorico() {
-        if (confirm("Deseja limpar a lista?")) {
+        if (confirm("Deseja limpar a lista visual?")) {
             localStorage.setItem('vendas_db', JSON.stringify([]));
             renderizarHistorico();
         }
