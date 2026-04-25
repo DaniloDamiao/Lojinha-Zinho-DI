@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             color: var(--dark);
-            padding-bottom: 100px; /* Espaço para o botão do Zap */
+            padding-bottom: 100px;
         }
 
         .header {
@@ -38,7 +38,6 @@
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-        /* Formulário */
         .card-form {
             background: white;
             border-radius: 20px;
@@ -66,7 +65,6 @@
         input:focus { border-color: var(--primary); background: white; }
         .row { display: flex; gap: 10px; }
 
-        /* Busca */
         .search-container {
             margin: 20px 0 10px 0;
             position: relative;
@@ -83,7 +81,6 @@
             color: #bdc3c7;
         }
 
-        /* Botões */
         .btn-save {
             width: 100%; padding: 15px; border: none; border-radius: 12px;
             background: linear-gradient(135deg, #9b59b6 0%, #34495e 100%);
@@ -96,7 +93,6 @@
             color: #95a5a6; cursor: pointer; margin-top: 10px; font-size: 14px;
         }
 
-        /* Itens da Lista */
         .item-registrado {
             background: white;
             padding: 12px 15px;
@@ -106,7 +102,6 @@
             align-items: center;
             gap: 12px;
             border-left: 5px solid #eee;
-            transition: 0.3s;
             cursor: pointer;
         }
 
@@ -116,64 +111,32 @@
         }
 
         .checkbox-box {
-            width: 22px;
-            height: 22px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            flex-shrink: 0;
+            width: 22px; height: 22px; border: 2px solid #ddd; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; color: white;
         }
 
-        .selected .checkbox-box {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
+        .selected .checkbox-box { background: var(--primary); border-color: var(--primary); }
 
         .item-info { flex: 1; }
         .item-info span { font-weight: 600; display: block; }
         .item-info small { color: #7f8c8d; }
 
-        .btn-edit-item {
-            color: #bdc3c7;
-            padding: 5px;
-        }
+        .btn-edit-item { color: #bdc3c7; padding: 5px; }
 
-        /* Botão Flutuante WhatsApp */
         .btn-whatsapp {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--whatsapp);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            border: none;
-            cursor: pointer;
-            width: 85%;
-            max-width: 400px;
-            justify-content: center;
-            z-index: 999;
-            display: none; /* Só aparece quando algo é selecionado */
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--whatsapp); color: white; padding: 15px 25px;
+            border-radius: 50px; display: none; align-items: center; gap: 10px;
+            text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(37,211,102,0.4);
+            border: none; cursor: pointer; width: 85%; max-width: 400px; justify-content: center; z-index: 999;
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <a href="index.html" class="btn-back">
-        <i class="material-icons">arrow_back</i>
-    </a>
-    <h3 style="margin:0; color: var(--dark)">Estoque e Catálogo</h3>
+    <a href="index.html" class="btn-back"><i class="material-icons">arrow_back</i></a>
+    <h3 style="margin:0;">Gerenciar Produtos</h3>
 </div>
 
 <div class="container">
@@ -202,7 +165,7 @@
             <input type="number" id="qtd" placeholder="0">
         </div>
 
-        <button class="btn-save" onclick="salvarProduto()">
+        <button type="button" class="btn-save" onclick="salvarProduto()">
             <i class="material-icons">save</i> <span id="texto-botao">Salvar Produto</span>
         </button>
         
@@ -212,28 +175,128 @@
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h4 style="margin:0;">Seus Produtos</h4>
+        <h4 style="margin:0;">Lista de Produtos</h4>
         <small id="count-selecionados" style="color: var(--primary); font-weight: bold;"></small>
     </div>
 
     <div class="search-container">
         <i class="material-icons">search</i>
-        <input type="text" id="inputBusca" placeholder="Pesquisar por nome..." onkeyup="renderizar()">
+        <input type="text" id="inputBusca" placeholder="Pesquisar..." onkeyup="renderizar()">
     </div>
 
     <div id="listaGerenciar"></div>
 </div>
 
 <button class="btn-whatsapp" id="btnWhatsapp" onclick="enviarWhatsApp()">
-    <i class="material-icons">share</i> Enviar Selecionados via WhatsApp
+    <i class="material-icons">share</i> Enviar via WhatsApp
 </button>
 
 <script>
+    // Banco de dados Global
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
     let selecionados = new Set();
 
+    // Iniciar
     window.onload = function() {
-        const idParaEditar = localStorage.getItem('produto_para_editar');
-        if (idParaEditar) {
-            prepararEdicao(parseInt(idParaEditar));
-            localStorage.removeItem('produto_para_editar');
+        renderizar();
+    };
+
+    function salvarProduto() {
+        const idField = document.getElementById('edit-id').value;
+        const nome = document.getElementById('nome').value.trim();
+        const custo = parseFloat(document.getElementById('custo').value);
+        const venda = parseFloat(document.getElementById('venda').value);
+        const qtd = parseInt(document.getElementById('qtd').value);
+
+        if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
+            alert("Preencha todos os campos!");
+            return;
+        }
+
+        if (idField) {
+            const i = db.findIndex(p => p.id == idField);
+            if (i !== -1) {
+                db[i] = { ...db[i], nome, custo, venda, qtd };
+            }
+        } else {
+            db.push({
+                id: Date.now(),
+                nome, custo, venda, qtd,
+                vendidos: 0, lucroAcumulado: 0, custoAcumulado: 0
+            });
+        }
+
+        localStorage.setItem('estoque_db', JSON.stringify(db));
+        limparCampos();
+        renderizar();
+        alert("Salvo!");
+    }
+
+    function renderizar() {
+        const lista = document.getElementById('listaGerenciar');
+        const busca = document.getElementById('inputBusca').value.toLowerCase();
+        const filtrados = db.filter(p => p.nome.toLowerCase().includes(busca));
+
+        lista.innerHTML = filtrados.map(p => `
+            <div class="item-registrado ${selecionados.has(p.id) ? 'selected' : ''}" onclick="toggleSelecao(${p.id}, event)">
+                <div class="checkbox-box">
+                    <i class="material-icons" style="font-size:16px">${selecionados.has(p.id) ? 'check' : ''}</i>
+                </div>
+                <div class="item-info">
+                    <span>${p.nome}</span>
+                    <small>Venda: R$ ${p.venda.toFixed(2)} | Estoque: ${p.qtd}</small>
+                </div>
+                <div class="btn-edit-item" onclick="prepararEdicao(${p.id})">
+                    <i class="material-icons">edit</i>
+                </div>
+            </div>
+        `).join('');
+
+        const btnZap = document.getElementById('btnWhatsapp');
+        const contador = document.getElementById('count-selecionados');
+        btnZap.style.display = selecionados.size > 0 ? "flex" : "none";
+        contador.innerText = selecionados.size > 0 ? selecionados.size + " selecionado(s)" : "";
+    }
+
+    function toggleSelecao(id, event) {
+        if (event.target.closest('.btn-edit-item')) return;
+        if (selecionados.has(id)) { selecionados.delete(id); } 
+        else { selecionados.add(id); }
+        renderizar();
+    }
+
+    function prepararEdicao(id) {
+        const p = db.find(prod => prod.id === id);
+        if(!p) return;
+        document.getElementById('edit-id').value = p.id;
+        document.getElementById('nome').value = p.nome;
+        document.getElementById('custo').value = p.custo;
+        document.getElementById('venda').value = p.venda;
+        document.getElementById('qtd').value = p.qtd;
+        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">edit</i> Editando';
+        document.getElementById('texto-botao').innerText = "Atualizar";
+        document.getElementById('btn-cancelar').style.display = "block";
+        window.scrollTo(0,0);
+    }
+
+    function limparCampos() {
+        document.getElementById('edit-id').value = '';
+        document.getElementById('nome').value = '';
+        document.getElementById('custo').value = '';
+        document.getElementById('venda').value = '';
+        document.getElementById('qtd').value = '';
+        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">add_circle</i> Novo Produto';
+        document.getElementById('texto-botao').innerText = "Salvar Produto";
+        document.getElementById('btn-cancelar').style.display = "none";
+    }
+
+    function enviarWhatsApp() {
+        let txt = "*Catálogo de Produtos*\n\n";
+        db.forEach(p => {
+            if (selecionados.has(p.id)) txt += `• *${p.nome}*: R$ ${p.venda.toFixed(2)}\n`;
+        });
+        window.open("https://wa.me/?text=" + encodeURIComponent(txt));
+    }
+</script>
+</body>
+</html>
