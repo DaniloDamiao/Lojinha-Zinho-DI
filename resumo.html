@@ -39,18 +39,16 @@
         
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-        /* Banner de Status da Sincronização */
         #statusCloud {
             font-size: 11px;
             text-align: center;
-            padding: 10px;
+            padding: 8px;
             background: #dfe6e9;
-            color: #2d3436;
+            color: #636e72;
             border-radius: 10px;
             margin-bottom: 15px;
             display: none;
             font-weight: bold;
-            border: 1px solid #b2bec3;
         }
 
         .card-financeiro {
@@ -82,12 +80,12 @@
         .bg-lucro { background: var(--secondary); }
         .bg-potencial { background: var(--primary); }
 
-        .btn-sync {
+        .btn-refresh {
             width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 15px;
-            border: none;
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 12px;
             border-radius: 12px;
             font-weight: bold;
             display: flex;
@@ -96,10 +94,7 @@
             gap: 10px;
             cursor: pointer;
             margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(0,100,55,0.2);
         }
-
-        .btn-sync:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -108,18 +103,18 @@
     <a href="index.html" class="btn-back">
         <i class="material-icons">arrow_back</i>
     </a>
-    <h3 style="margin:0">Resumo Financeiro</h3>
+    <h3 style="margin:0">Financeiro</h3>
 </div>
 
 <div class="container">
-    <div id="statusCloud">☁️ Sincronizando com a Planilha...</div>
+    <div id="statusCloud">☁️ Sincronizando dados...</div>
 
     <div class="card-financeiro">
         <div class="card-icon bg-caixa">
             <i class="material-icons">payments</i>
         </div>
         <div class="info">
-            <h3>Total Bruto em Caixa</h3>
+            <h3>Total em Caixa</h3>
             <p id="totalCaixa">R$ 0,00</p>
         </div>
     </div>
@@ -149,72 +144,55 @@
             <i class="material-icons">account_balance</i>
         </div>
         <div class="info">
-            <h3>Valor de Venda (Estoque Atual)</h3>
+            <h3>Valor em Estoque (Venda)</h3>
             <p id="valorEstoqueVenda">R$ 0,00</p>
         </div>
     </div>
 
-    <button class="btn-sync" onclick="sincronizarDados()">
-        <i class="material-icons">sync</i> ATUALIZAR DA PLANILHA
+    <button class="btn-refresh" onclick="carregarDadosDaNuvem()">
+        <i class="material-icons">sync</i> ATUALIZAR DADOS
     </button>
 </div>
 
 <script>
-    // URL do seu Google Apps Script (o mesmo que você usou nos outros arquivos)
+    // URL do seu Script do Google
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
 
-    // Executa ao carregar a página
     window.onload = function() {
-        // Primeiro mostra o que tem no celular (rápido)
-        const dadosLocais = JSON.parse(localStorage.getItem('estoque_db')) || [];
-        calcularFinanceiro(dadosLocais);
-        
-        // Depois tenta atualizar da nuvem automaticamente
-        sincronizarDados();
+        carregarDadosDaNuvem();
     };
 
-    async function sincronizarDados() {
+    async function carregarDadosDaNuvem() {
         const statusDiv = document.getElementById('statusCloud');
         statusDiv.style.display = "block";
-        statusDiv.style.background = "#dfe6e9";
-        statusDiv.innerText = "☁️ Sincronizando com Google Sheets...";
+        statusDiv.innerText = "☁️ Buscando dados da planilha...";
         
         try {
-            // Busca dados da Planilha (Função doGet do Script)
             const response = await fetch(URL_GOOGLE);
-            if (!response.ok) throw new Error("Erro na rede");
-            
             const dadosNuvem = await response.json();
             
-            if (dadosNuvem && dadosNuvem.length > 0) {
-                // Padroniza os dados da planilha para o formato do sistema
+            if (dadosNuvem) {
+                // Salva no banco local para consulta
                 const dbFormatado = dadosNuvem.map(p => ({
-                    id: p.id,
-                    nome: p.nome,
                     custo: parseFloat(p.custo) || 0,
                     venda: parseFloat(p.venda) || 0,
                     qtd: parseInt(p.qtd) || 0,
                     lucroAcumulado: parseFloat(p.lucroacumulado) || 0,
                     vendidos: parseInt(p.vendidos) || 0
                 }));
-
-                // Salva no celular para a próxima vez
                 localStorage.setItem('estoque_db', JSON.stringify(dbFormatado));
                 
-                // Atualiza a tela com os números novos
                 calcularFinanceiro(dbFormatado);
-                
-                statusDiv.innerText = "✅ Dados da Planilha Atualizados!";
-                statusDiv.style.background = "#c8f7dc";
+                statusDiv.innerText = "✅ Atualizado em: " + new Date().toLocaleTimeString();
             }
         } catch (error) {
-            console.error("Erro de sincronização:", error);
-            statusDiv.innerText = "⚠️ Offline: Exibindo dados locais.";
-            statusDiv.style.background = "#ffeaa7";
+            console.error("Erro:", error);
+            statusDiv.innerText = "⚠️ Erro ao sincronizar. Usando dados locais.";
+            const localDb = JSON.parse(localStorage.getItem('estoque_db')) || [];
+            calcularFinanceiro(localDb);
         }
         
-        // Esconde o aviso após 3 segundos
-        setTimeout(() => { statusDiv.style.display = "none"; }, 3000);
+        setTimeout(() => statusDiv.style.display = "none", 3000);
     }
 
     function calcularFinanceiro(db) {
@@ -223,33 +201,25 @@
         let lucroRealizado = 0;
         let totalCaixa = 0;
 
-        // Recupera também o histórico de vendas local para complementar o caixa se necessário
-        let vendasLocais = JSON.parse(localStorage.getItem('vendas_db')) || [];
-
         db.forEach(p => {
-            // 1. Custo de Reposição (Custo x Qtd que ainda tenho)
+            // Dinheiro parado em produtos que você ainda tem
             custoReposicao += (p.custo * p.qtd);
             
-            // 2. Valor de Venda do Estoque (Venda x Qtd que ainda tenho)
+            // Valor que você receberá se vender tudo o que tem hoje
             valorEstoqueVenda += (p.venda * p.qtd);
             
-            // 3. Lucro Realizado (Vem da coluna 'lucroacumulado' da planilha)
+            // Lucro que você já teve com o que já foi vendido
             lucroRealizado += p.lucroAcumulado;
             
-            // 4. Total em Caixa (Venda x Quantidade já vendida)
+            // Total bruto que entrou no caixa (Preço de venda * quantidade vendida)
             totalCaixa += (p.venda * p.vendidos);
         });
 
-        // Caso a planilha ainda esteja zerada, tenta somar das vendas locais
-        if(totalCaixa === 0 && vendasLocais.length > 0) {
-            totalCaixa = vendasLocais.reduce((acc, v) => acc + (parseFloat(v.venda) || 0), 0);
-        }
-
-        // Atualiza os valores no HTML
-        document.getElementById('custoReposicao').innerText = `R$ ${custoReposicao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('valorEstoqueVenda').innerText = `R$ ${valorEstoqueVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('totalLucro').innerText = `R$ ${lucroRealizado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('totalCaixa').innerText = `R$ ${totalCaixa.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        // Atualiza a tela
+        document.getElementById('custoReposicao').innerText = `R$ ${custoReposicao.toFixed(2)}`;
+        document.getElementById('valorEstoqueVenda').innerText = `R$ ${valorEstoqueVenda.toFixed(2)}`;
+        document.getElementById('totalLucro').innerText = `R$ ${lucroRealizado.toFixed(2)}`;
+        document.getElementById('totalCaixa').innerText = `R$ ${totalCaixa.toFixed(2)}`;
     }
 </script>
 </body>
