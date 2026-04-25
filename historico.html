@@ -48,7 +48,7 @@
         }
 
         .filter-group { margin-bottom: 12px; }
-        .filter-group label { display: block; font-size: 11px; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; letter-spacing: 0.5px; }
+        .filter-group label { display: block; font-size: 11px; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
         
         .filter-input {
             width: 100%;
@@ -61,7 +61,6 @@
             background: #f8fafc;
         }
 
-        .filter-input:focus { border-color: var(--primary); background: white; }
         .filter-row { display: flex; gap: 10px; }
 
         /* Botão Relatório */
@@ -80,16 +79,13 @@
             cursor: pointer;
             margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-            transition: 0.2s;
         }
-        .btn-report:active { transform: scale(0.98); }
 
         .title-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            padding: 0 5px;
         }
 
         /* Card de Venda */
@@ -143,7 +139,6 @@
         }
 
         .empty-state { text-align: center; padding: 60px 20px; color: #bdc3c7; }
-        .empty-state i { font-size: 50px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -160,26 +155,26 @@
     <div class="filter-section">
         <div class="filter-group">
             <label>BUSCAR PRODUTO</label>
-            <input type="text" id="filtroNome" class="filter-input" placeholder="Digite o nome do produto..." oninput="renderizarHistorico()">
+            <input type="text" id="filtroNome" class="filter-input" placeholder="Digite o nome..." oninput="renderizarHistorico()">
         </div>
         <div class="filter-row">
             <div class="filter-group" style="flex: 1;">
-                <label>DE (DATA INÍCIO)</label>
+                <label>DE:</label>
                 <input type="date" id="filtroDataInicio" class="filter-input" onchange="renderizarHistorico()">
             </div>
             <div class="filter-group" style="flex: 1;">
-                <label>ATÉ (DATA FIM)</label>
+                <label>ATÉ:</label>
                 <input type="date" id="filtroDataFim" class="filter-input" onchange="renderizarHistorico()">
             </div>
         </div>
     </div>
 
     <button id="btnRelatorio" class="btn-report" onclick="enviarRelatorioFiltrado()" style="display: none;">
-        <i class="material-icons">summarize</i> Gerar Relatório do WhatsApp
+        <i class="material-icons">summarize</i> Enviar Relatório WhatsApp
     </button>
 
     <div class="title-section">
-        <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d; font-weight: 500;">Buscando vendas...</span>
+        <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d;">Buscando...</span>
     </div>
 
     <div id="listaHistorico"></div>
@@ -198,49 +193,50 @@
         const contador = document.getElementById('contador-vendas');
         const btnRelatorio = document.getElementById('btnRelatorio');
         
-        const buscaNome = document.getElementById('filtroNome').value.toLowerCase();
-        const dataInicio = document.getElementById('filtroDataInicio').value; // Formato YYYY-MM-DD
-        const dataFim = document.getElementById('filtroDataFim').value;       // Formato YYYY-MM-DD
+        const buscaNome = document.getElementById('filtroNome').value.toLowerCase().trim();
+        const dataInicio = document.getElementById('filtroDataInicio').value;
+        const dataFim = document.getElementById('filtroDataFim').value;
 
-        // LÓGICA DE FILTRAGEM CORRIGIDA
         vendasAtuaisExibidas = vendas.filter(v => {
-            // 1. Filtro por Nome
+            // 1. Filtro Nome
             const matchNome = v.nome.toLowerCase().includes(buscaNome);
             
-            // 2. Filtro por Data
-            // v.data costuma ser "25/04/2026 10:30"
-            // Pegamos apenas a parte antes do espaço (a data) e transformamos em YYYY-MM-DD
-            const partesDataEHora = v.data.split(' ');
-            const partesDataSomente = partesDataEHora[0].split('/'); 
-            const dataVendaISO = `${partesDataSomente[2]}-${partesDataSomente[1]}-${partesDataSomente[0]}`;
-            
-            let matchData = true;
-            if (dataInicio && dataVendaISO < dataInicio) matchData = false;
-            if (dataFim && dataVendaISO > dataFim) matchData = false;
+            // 2. Filtro Data (Conversão Segura para Comparação)
+            try {
+                const dataLimpa = v.data.trim().split(' ')[0]; 
+                const partes = dataLimpa.split('/');
+                
+                if (partes.length === 3) {
+                    const dia = partes[0].padStart(2, '0');
+                    const mes = partes[1].padStart(2, '0');
+                    const ano = partes[2];
+                    const dataVendaISO = `${ano}-${mes}-${dia}`;
+                    
+                    if (dataInicio && dataVendaISO < dataInicio) return false;
+                    if (dataFim && dataVendaISO > dataFim) return false;
+                }
+            } catch (e) {
+                console.error("Erro ao processar data da venda", e);
+            }
 
-            return matchNome && matchData;
+            return matchNome;
         });
 
         contador.innerText = `${vendasAtuaisExibidas.length} venda(s) encontrada(s)`;
         btnRelatorio.style.display = vendasAtuaisExibidas.length > 0 ? "flex" : "none";
 
         if (vendasAtuaisExibidas.length === 0) {
-            lista.innerHTML = `
-                <div class="empty-state">
-                    <i class="material-icons">search_off</i>
-                    <p>Nenhum registro encontrado para essa busca.</p>
-                </div>`;
+            lista.innerHTML = `<div class="empty-state"><i class="material-icons">search_off</i><p>Nenhuma venda encontrada.</p></div>`;
             return;
         }
 
-        // Renderização (Ordem: Mais recentes no topo)
         lista.innerHTML = [...vendasAtuaisExibidas].reverse().map(v => `
             <div class="venda-card">
                 <div class="venda-info">
                     <b>${v.nome}</b>
                     <small><i class="material-icons" style="font-size:12px">event</i> ${v.data}</small>
                     <div class="btn-share-mini" onclick="compartilharVenda('${v.nome}', '${v.venda}', '${v.data}')">
-                        <i class="material-icons" style="font-size:14px">share</i> Comprovante
+                        <i class="material-icons" style="font-size:14px">share</i> Enviar
                     </div>
                 </div>
                 <div class="venda-valores">
@@ -252,51 +248,30 @@
     }
 
     function compartilharVenda(produto, valor, data) {
-        const mensagem = `*📄 COMPROVANTE DE VENDA*\n\n` +
-                         `*Item:* ${produto}\n` +
-                         `*Valor:* R$ ${parseFloat(valor).toFixed(2)}\n` +
-                         `*Data/Hora:* ${data}\n\n` +
-                         `_Obrigado pela preferência!_`;
-        
-        window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`, '_blank');
+        const msg = `*📄 COMPROVANTE*\n*Produto:* ${produto}\n*Valor:* R$ ${parseFloat(valor).toFixed(2)}\n*Data:* ${data}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function enviarRelatorioFiltrado() {
         if (vendasAtuaisExibidas.length === 0) return;
-
-        let totalVendas = 0;
-        let totalLucro = 0;
-        let mensagem = `*📊 RELATÓRIO FILTRADO - ESTOQUE PRO*\n`;
-        mensagem += `--------------------------------\n\n`;
-
+        let totalV = 0, totalL = 0;
+        let msg = `*📊 RELATÓRIO DE VENDAS*\n\n`;
         vendasAtuaisExibidas.forEach(v => {
-            mensagem += `🔹 *${v.nome}*\n`;
-            mensagem += `📅 ${v.data}\n`;
-            mensagem += `💰 R$ ${v.venda.toFixed(2)} (Lucro: R$ ${v.lucro.toFixed(2)})\n`;
-            mensagem += `--------------------------------\n`;
-            
-            totalVendas += v.venda;
-            totalLucro += v.lucro;
+            msg += `▪️ ${v.nome} - R$ ${v.venda.toFixed(2)}\n`;
+            totalV += v.venda; totalL += v.lucro;
         });
-
-        mensagem += `\n*RESUMO DO PERÍODO*\n`;
-        mensagem += `✅ Vendas realizadas: ${vendasAtuaisExibidas.length}\n`;
-        mensagem += `💵 Total bruto: *R$ ${totalVendas.toFixed(2)}*\n`;
-        mensagem += `📈 Lucro líquido: *R$ ${totalLucro.toFixed(2)}*`;
-
-        window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`, '_blank');
+        msg += `\n*Total Bruto:* R$ ${totalV.toFixed(2)}\n*Lucro Total:* R$ ${totalL.toFixed(2)}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function limparHistorico() {
-        if (confirm("Isso limpará apenas a visualização desta lista. O lucro acumulado nos produtos não será afetado. Confirmar?")) {
+        if (confirm("Deseja limpar a lista?")) {
             localStorage.setItem('vendas_db', JSON.stringify([]));
             renderizarHistorico();
         }
     }
 
-    // Inicializa a página
     renderizarHistorico();
 </script>
-
 </body>
 </html>
