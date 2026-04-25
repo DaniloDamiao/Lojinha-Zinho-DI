@@ -1,151 +1,81 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resumo Financeiro Pro</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        :root { --primary: #e67e22; --secondary: #ff6b6b; --bg: #f5f7fa; --dark: #2c3e50; --green: #25D366; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
-        .header { background: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .container { max-width: 500px; margin: auto; padding: 20px; }
-        #statusCloud { font-size: 11px; text-align: center; padding: 10px; margin-bottom: 15px; border-radius: 10px; display: none; font-weight: bold; }
-        .main-card { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 25px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2); }
-        .main-card h2 { font-size: 42px; margin: 10px 0; font-weight: 800; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); text-align: center; }
-        .stat-card i { font-size: 24px; margin-bottom: 8px; }
-        .stat-card div { font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }
-        .btn-wpp { width: 100%; background: var(--green); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-bottom: 12px; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
-        .btn-sync { width: 100%; background: white; color: var(--primary); border: 2px solid var(--primary); padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    </style>
-</head>
-<body>
+// URL DO SEU GOOGLE SCRIPT (Verifique se é a versão /exec mais recente)
+const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
 
-<div class="header">
-    <a href="index.html" style="text-decoration:none; color:inherit;"><i class="material-icons">arrow_back</i></a>
-    <h3 style="margin:0">Financeiro Pro</h3>
-    <i class="material-icons" style="color: var(--primary); cursor: pointer;" onclick="sincronizarDados()">sync</i>
-</div>
-
-<div class="container">
-    <div id="statusCloud"></div>
-    
-    <div class="main-card">
-        <span>Lucro Líquido Realizado</span>
-        <h2 id="lucroTotal">R$ 0,00</h2>
-        <div id="qtdVendas" style="opacity: 0.8;">Sincronizando...</div>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <i class="material-icons" style="color: #e74c3c;">inventory_2</i>
-            <div>Custo de Reposição</div>
-            <strong id="custoTotal">R$ 0,00</strong>
-        </div>
-        <div class="stat-card">
-            <i class="material-icons" style="color: #27ae60;">account_balance_wallet</i>
-            <div>Total em Caixa</div>
-            <strong id="caixaTotal">R$ 0,00</strong>
-        </div>
-    </div>
-
-    <button class="btn-wpp" onclick="enviarWhatsApp()">
-        <i class="material-icons">share</i> Enviar Relatório WhatsApp
-    </button>
-
-    <button class="btn-sync" onclick="sincronizarDados()">
-        <i class="material-icons">refresh</i> ATUALIZAR DA PLANILHA
-    </button>
-</div>
-
-<script>
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
-
-    async function sincronizarDados() {
-        const statusDiv = document.getElementById('statusCloud');
+async function sincronizarDados() {
+    const statusDiv = document.getElementById('statusCloud');
+    if(statusDiv) {
         statusDiv.style.display = "block";
         statusDiv.innerText = "☁️ Buscando dados novos...";
-        statusDiv.style.background = "#eee";
+    }
 
-        try {
-            const response = await fetch(URL_GOOGLE + "?t=" + Date.now());
-            const dados = await response.json();
+    try {
+        const response = await fetch(URL_GOOGLE + "?t=" + Date.now());
+        const dados = await response.json();
 
-            if (dados && dados.length > 0) {
-                const dbFormatado = dados.map(p => {
-                    // RESOLUÇÃO DO PROBLEMA: Aceita Qtd (com maiúscula) ou qtd (com minúscula)
-                    const v_custo = parseFloat(p.custo || p.Custo || 0);
-                    const v_qtd = parseInt(p.Qtd || p.qtd || p.quantidade || 0); 
-                    const v_lucro = parseFloat(p.lucroacumulado || p.lucroAcumulado || 0);
-                    const v_vendidos = parseInt(p.vendidos || p.Vendidos || 0);
+        if (dados && Array.isArray(dados)) {
+            // Filtramos apenas itens que tenham nome para evitar o erro de 'toLowerCase'
+            const dbFormatado = dados.filter(item => item.nome || item.Nome).map(p => {
+                // Pegamos os valores tratando maiúsculas e minúsculas
+                const v_custo = parseFloat(p.custo || p.Custo || 0);
+                const v_qtd = parseInt(p.Qtd || p.qtd || p.quantidade || 0); 
+                const v_lucro = parseFloat(p.lucroacumulado || p.lucroAcumulado || 0);
+                const v_vendidos = parseInt(p.vendidos || p.Vendidos || 0);
 
-                    return {
-                        nome: p.nome || "Produto",
-                        custo: v_custo,
-                        qtd: v_qtd,
-                        lucroAcumulado: v_lucro,
-                        vendidos: v_vendidos
-                    };
-                });
+                return {
+                    nome: p.nome || p.Nome || "Produto sem nome",
+                    custo: v_custo,
+                    qtd: v_qtd,
+                    lucroAcumulado: v_lucro,
+                    vendidos: v_vendidos
+                };
+            });
 
-                localStorage.setItem('estoque_db', JSON.stringify(dbFormatado));
-                renderizarResumo(dbFormatado);
-                
-                statusDiv.innerText = "✅ Atualizado!";
-                statusDiv.style.background = "#c8f7dc";
-            }
-        } catch (e) {
-            console.error(e);
-            statusDiv.innerText = "❌ Erro ao conectar";
-            statusDiv.style.background = "#ffb8b8";
+            localStorage.setItem('estoque_db', JSON.stringify(dbFormatado));
+            renderizarResumo(dbFormatado);
+            if(statusDiv) statusDiv.innerText = "✅ Sincronizado!";
         }
-        setTimeout(() => { statusDiv.style.display = "none"; }, 3000);
+    } catch (e) {
+        console.error("Erro na sync:", e);
+        if(statusDiv) statusDiv.innerText = "❌ Erro ao conectar";
     }
+    setTimeout(() => { if(statusDiv) statusDiv.style.display = "none"; }, 3000);
+}
 
-    function renderizarResumo(db) {
-        let lucroTotal = 0;
-        let custoReposição = 0;
-        let custoRecuperado = 0;
-        let totalVendidos = 0;
+function renderizarResumo(db) {
+    let lucroTotal = 0;
+    let custoEstoque = 0;
+    let custoVendido = 0;
+    let totalVendidos = 0;
 
-        db.forEach(p => {
-            lucroTotal += p.lucroAcumulado;
-            totalVendidos += p.vendidos;
-            // Agora o cálculo usa a variável corrigida v_qtd (p.qtd)
-            custoReposição += (p.custo * p.qtd);
-            custoRecuperado += (p.custo * p.vendidos);
-        });
+    db.forEach(p => {
+        lucroTotal += (p.lucroAcumulado || 0);
+        totalVendidos += (p.vendidos || 0);
+        // Custo de Reposição: Custo unitário x Qtd que sobrou no estoque
+        custoEstoque += (p.custo * p.qtd);
+        // Custo Recuperado: Custo unitário x Qtd que já saiu
+        custoVendido += (p.custo * p.vendidos);
+    });
 
-        document.getElementById('lucroTotal').innerText = `R$ ${lucroTotal.toFixed(2)}`;
-        document.getElementById('custoTotal').innerText = `R$ ${custoReposição.toFixed(2)}`;
-        document.getElementById('caixaTotal').innerText = `R$ ${(lucroTotal + custoRecuperado).toFixed(2)}`;
-        document.getElementById('qtdVendas').innerText = `${totalVendidos} unidades vendidas`;
+    // Atualiza os elementos na tela com segurança
+    const elLucro = document.getElementById('lucroTotal');
+    const elCusto = document.getElementById('custoTotal');
+    const elCaixa = document.getElementById('caixaTotal');
+    const elVendas = document.getElementById('qtdVendas');
+
+    if(elLucro) elLucro.innerText = `R$ ${lucroTotal.toFixed(2)}`;
+    if(elCusto) elCusto.innerText = `R$ ${custoEstoque.toFixed(2)}`;
+    if(elCaixa) elCaixa.innerText = `R$ ${(lucroTotal + custoVendido).toFixed(2)}`;
+    if(elVendas) elVendas.innerText = `${totalVendidos} unidades vendidas`;
+}
+
+// Inicialização segura
+window.onload = function() {
+    const dadosLocais = localStorage.getItem('estoque_db');
+    if (dadosLocais) {
+        try {
+            const db = JSON.parse(dadosLocais);
+            renderizarResumo(db);
+        } catch(e) { console.error("Erro no cache:", e); }
     }
-
-    function enviarWhatsApp() {
-        const db = JSON.parse(localStorage.getItem('estoque_db')) || [];
-        let tLucro = 0, tCustoRec = 0;
-        let rel = "*📊 RELATÓRIO FINANCEIRO*\n\n";
-        
-        db.forEach(p => {
-            if(p.vendidos > 0) {
-                tLucro += p.lucroAcumulado;
-                tCustoRec += (p.custo * p.vendidos);
-                rel += `✅ *${p.nome.toUpperCase()}*\n   Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
-            }
-        });
-
-        rel += `\n*💰 TOTAL EM CAIXA: R$ ${(tLucro + tCustoRec).toFixed(2)}*`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
-    }
-
-    window.onload = function() {
-        const local = JSON.parse(localStorage.getItem('estoque_db')) || [];
-        if(local.length > 0) renderizarResumo(local);
-        sincronizarDados();
-    };
-</script>
-</body>
-</html>
+    sincronizarDados();
+};
