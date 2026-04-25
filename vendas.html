@@ -235,4 +235,41 @@
             try {
                 await fetch(URL_GOOGLE, {
                     method: 'POST',
-                    mode: 'no-
+                    mode: 'no-cors', // Mantido no-cors para evitar erros de redirecionamento do Google
+                    body: JSON.stringify({
+                        tipo: "VENDA",
+                        ...novaVenda
+                    })
+                });
+                statusDiv.innerText = "✅ Venda sincronizada!";
+            } catch (error) {
+                statusDiv.innerText = "⚠️ Erro na nuvem (Salvo no celular)";
+            }
+            
+            setTimeout(() => statusDiv.style.display = "none", 2000);
+
+        } else {
+            alert("⚠️ Estoque esgotado!");
+        }
+    }
+
+    function editar(id) {
+        localStorage.setItem('produto_para_editar', id);
+        window.location.href = 'gerenciar.html'; // Ajustado para o nome da sua pagina de gerenciamento
+    }
+
+    function deletar(id) {
+        if (confirm("Excluir este produto?")) {
+            db = db.filter(p => p.id !== id);
+            salvarLocal();
+        }
+    }
+
+    function salvarLocal() {
+        localStorage.setItem('estoque_db', JSON.stringify(db));
+        localStorage.setItem('vendas_db', JSON.stringify(vendas));
+        renderizar();
+    }
+</script>
+</body>
+</html>
