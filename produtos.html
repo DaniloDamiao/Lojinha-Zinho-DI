@@ -229,7 +229,7 @@
         localStorage.setItem('estoque_db', JSON.stringify(db));
         limparCampos();
         renderizar();
-        alert("Salvo!");
+        alert("Poduto cadastrado com sucesso!");
     }
 
     function renderizar() {
@@ -291,7 +291,7 @@
     }
 
     function enviarWhatsApp() {
-        let txt = "*Catálogo de Produtos*\n\n";
+        let txt = "*Lista de Produtos*\n\n";
         db.forEach(p => {
             if (selecionados.has(p.id)) txt += `• *${p.nome}*: R$ ${p.venda.toFixed(2)}\n`;
         });
