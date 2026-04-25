@@ -17,125 +17,68 @@
         body {
             font-family: 'Segoe UI', sans-serif;
             background: var(--bg);
-            margin: 0;
-            padding: 0;
-            color: var(--dark);
+            margin: 0; padding: 0; color: var(--dark);
             padding-bottom: 30px;
         }
 
         .header {
-            background: white;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            background: white; padding: 15px 20px;
+            display: flex; align-items: center; gap: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            position: sticky; top: 0; z-index: 100;
         }
 
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-        /* Filtros */
         .filter-section {
-            background: white;
-            padding: 15px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: white; padding: 15px; border-radius: 20px;
+            margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .filter-group { margin-bottom: 12px; }
         .filter-group label { display: block; font-size: 11px; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
         
         .filter-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #edf2f7;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 14px;
-            outline: none;
-            background: #f8fafc;
+            width: 100%; padding: 12px; border: 1px solid #edf2f7;
+            border-radius: 10px; box-sizing: border-box; font-size: 14px;
+            outline: none; background: #f8fafc;
         }
 
         .filter-row { display: flex; gap: 10px; }
 
-        /* Botão Relatório */
         .btn-report {
-            width: 100%;
-            background: var(--whatsapp);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            width: 100%; background: var(--whatsapp); color: white; border: none;
+            padding: 15px; border-radius: 12px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            cursor: pointer; margin-bottom: 20px;
         }
 
-        .title-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        /* Card de Venda */
         .venda-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: white; border-radius: 15px; padding: 15px;
+            margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex; justify-content: space-between; align-items: center;
             border-right: 4px solid var(--secondary);
         }
 
-        .venda-info b { display: block; font-size: 16px; margin-bottom: 4px; color: var(--dark); }
+        .venda-info b { display: block; font-size: 16px; margin-bottom: 4px; }
         .venda-info small { color: #95a5a6; font-size: 12px; display: flex; align-items: center; gap: 5px; }
 
-        .venda-valores { text-align: right; }
         .val-lucro { color: #27ae60; font-weight: bold; font-size: 15px; display: block; }
         .val-venda { color: #7f8c8d; font-size: 12px; }
 
         .btn-share-mini {
-            margin-top: 10px;
-            color: var(--whatsapp);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            font-weight: bold;
-            background: #e8f9ef;
-            padding: 5px 10px;
-            border-radius: 20px;
+            margin-top: 10px; color: var(--whatsapp); cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: bold; background: #e8f9ef;
+            padding: 5px 10px; border-radius: 20px;
         }
 
         .btn-limpar {
-            width: 100%;
-            background: none;
-            border: 1px dashed #bdc3c7;
-            color: #95a5a6;
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-top: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 13px;
+            width: 100%; background: none; border: 1px dashed #bdc3c7;
+            color: #95a5a6; padding: 15px; border-radius: 12px;
+            cursor: pointer; margin-top: 30px; display: flex;
+            align-items: center; justify-content: center; gap: 10px;
         }
 
         .empty-state { text-align: center; padding: 60px 20px; color: #bdc3c7; }
@@ -144,18 +87,15 @@
 <body>
 
 <div class="header">
-    <a href="index.html" class="btn-back">
-        <i class="material-icons">arrow_back</i>
-    </a>
+    <a href="index.html" class="btn-back"><i class="material-icons">arrow_back</i></a>
     <h3 style="margin:0">Histórico de Vendas</h3>
 </div>
 
 <div class="container">
-    
     <div class="filter-section">
         <div class="filter-group">
-            <label>BUSCAR PRODUTO</label>
-            <input type="text" id="filtroNome" class="filter-input" placeholder="Digite o nome..." oninput="renderizarHistorico()">
+            <label>PRODUTO</label>
+            <input type="text" id="filtroNome" class="filter-input" placeholder="Nome do produto..." oninput="renderizarHistorico()">
         </div>
         <div class="filter-row">
             <div class="filter-group" style="flex: 1;">
@@ -173,10 +113,6 @@
         <i class="material-icons">summarize</i> Enviar Relatório WhatsApp
     </button>
 
-    <div class="title-section">
-        <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d;">Buscando...</span>
-    </div>
-
     <div id="listaHistorico"></div>
 
     <button class="btn-limpar" onclick="limparHistorico()">
@@ -190,7 +126,6 @@
     function renderizarHistorico() {
         const vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
         const lista = document.getElementById('listaHistorico');
-        const contador = document.getElementById('contador-vendas');
         const btnRelatorio = document.getElementById('btnRelatorio');
         
         const buscaNome = document.getElementById('filtroNome').value.toLowerCase().trim();
@@ -198,44 +133,43 @@
         const dataFim = document.getElementById('filtroDataFim').value;
 
         vendasAtuaisExibidas = vendas.filter(v => {
-            // 1. Filtro por Nome
+            // 1. Filtro de Nome
             const matchNome = v.nome.toLowerCase().includes(buscaNome);
             
-            // 2. Lógica Inteligente de Data
+            // 2. Filtro de Data (Lógica de Extração de Números)
             let matchData = true;
+
             if (dataInicio || dataFim) {
-                try {
-                    // Pega a parte da data e limpa espaços
-                    const apenasData = v.data.trim().split(' ')[0];
-                    // Detecta se o separador é barra ou traço
-                    const separador = apenasData.includes('/') ? '/' : '-';
-                    const partes = apenasData.split(separador);
-                    
-                    let dataVendaISO = "";
-                    
-                    if (partes[0].length === 4) { 
-                        // Formato YYYY-MM-DD
-                        dataVendaISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
+                // Pega apenas a data (antes do espaço da hora)
+                const dataLimpa = v.data.split(' ')[0];
+                // Extrai apenas os números (remove barras, traços, etc)
+                const numeros = dataLimpa.match(/\d+/g);
+
+                if (numeros && numeros.length === 3) {
+                    let d, m, y;
+                    // Se o primeiro número tiver 4 dígitos, é Ano (YYYY-MM-DD)
+                    if (numeros[0].length === 4) {
+                        y = numeros[0]; m = numeros[1]; d = numeros[2];
                     } else {
-                        // Formato DD-MM-YYYY
-                        dataVendaISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+                        // Senão, assume Dia-Mês-Ano (DD-MM-YYYY)
+                        d = numeros[0]; m = numeros[1]; y = numeros[2];
                     }
+
+                    // Formata para ISO (YYYY-MM-DD)
+                    const dataVendaISO = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
 
                     if (dataInicio && dataVendaISO < dataInicio) matchData = false;
                     if (dataFim && dataVendaISO > dataFim) matchData = false;
-                } catch (e) {
-                    matchData = false;
                 }
             }
 
             return matchNome && matchData;
         });
 
-        contador.innerText = `${vendasAtuaisExibidas.length} venda(s) encontrada(s)`;
         btnRelatorio.style.display = vendasAtuaisExibidas.length > 0 ? "flex" : "none";
 
         if (vendasAtuaisExibidas.length === 0) {
-            lista.innerHTML = `<div class="empty-state"><i class="material-icons">search_off</i><p>Nenhuma venda encontrada para este filtro.</p></div>`;
+            lista.innerHTML = `<div class="empty-state"><i class="material-icons">search_off</i><p>Nenhuma venda encontrada.</p></div>`;
             return;
         }
 
@@ -262,19 +196,18 @@
     }
 
     function enviarRelatorioFiltrado() {
-        if (vendasAtuaisExibidas.length === 0) return;
         let totalV = 0, totalL = 0;
         let msg = `*📊 RELATÓRIO DE VENDAS*\n\n`;
         vendasAtuaisExibidas.forEach(v => {
             msg += `▪️ ${v.nome} - R$ ${v.venda.toFixed(2)}\n`;
             totalV += v.venda; totalL += v.lucro;
         });
-        msg += `\n*Total Bruto:* R$ ${totalV.toFixed(2)}\n*Lucro Total:* R$ ${totalL.toFixed(2)}`;
+        msg += `\n*Bruto:* R$ ${totalV.toFixed(2)}\n*Lucro:* R$ ${totalL.toFixed(2)}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function limparHistorico() {
-        if (confirm("Deseja limpar a lista visual?")) {
+        if (confirm("Limpar lista visual?")) {
             localStorage.setItem('vendas_db', JSON.stringify([]));
             renderizarHistorico();
         }
