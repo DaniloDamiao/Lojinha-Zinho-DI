@@ -3,131 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resumo - Estoque Pro</title>
+    <title>Resumo Financeiro Pro</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #e67e22; 
-            --secondary: #ff6b6b; 
-            --bg: #f5f7fa; 
-            --dark: #2c3e50; 
-            --green: #25D366;
-        }
-
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding: 0; 
-            color: var(--dark); 
-        }
-
-        .header { 
-            background: white; 
-            padding: 15px 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-        }
-
-        .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
-
+        :root { --primary: #e67e22; --secondary: #ff6b6b; --bg: #f5f7fa; --dark: #2c3e50; --green: #25D366; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
+        .header { background: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .container { max-width: 500px; margin: auto; padding: 20px; }
-
-        #statusCloud { 
-            font-size: 11px; 
-            text-align: center; 
-            padding: 10px; 
-            margin-bottom: 15px; 
-            border-radius: 10px; 
-            display: none; 
-            font-weight: bold; 
-        }
-
-        /* Card Principal - Lucro */
-        .main-card { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); 
-            border-radius: 25px; 
-            padding: 30px 20px; 
-            color: white; 
-            text-align: center; 
-            box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2); 
-            margin-bottom: 25px; 
-        }
-        .main-card span { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        #statusCloud { font-size: 11px; text-align: center; padding: 10px; margin-bottom: 15px; border-radius: 10px; display: none; font-weight: bold; }
+        .main-card { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 25px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2); }
         .main-card h2 { font-size: 42px; margin: 10px 0; font-weight: 800; }
-
-        /* Grid de Cards Menores */
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-        }
-        .stat-card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 20px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
-            text-align: center; 
-        }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); text-align: center; }
         .stat-card i { font-size: 24px; margin-bottom: 8px; }
         .stat-card div { font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }
-        .stat-card strong { font-size: 16px; display: block; }
-
-        /* Botões */
-        .btn-wpp { 
-            width: 100%; 
-            background: var(--green); 
-            color: white; 
-            border: none; 
-            padding: 18px; 
-            border-radius: 15px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            cursor: pointer; 
-            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); 
-            margin-bottom: 12px;
-        }
-
-        .btn-sync { 
-            width: 100%; 
-            background: white; 
-            color: var(--primary); 
-            border: 2px solid var(--primary); 
-            padding: 15px; 
-            border-radius: 15px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-        }
-        .btn-wpp:active, .btn-sync:active { transform: scale(0.98); }
-
-        .info-box {
-            background: #ebf5fb;
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #2980b9;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .btn-wpp { width: 100%; background: var(--green); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-bottom: 12px; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
+        .btn-sync { width: 100%; background: white; color: var(--primary); border: 2px solid var(--primary); padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <a href="index.html" class="btn-back"><i class="material-icons">arrow_back</i></a>
+    <a href="index.html" style="text-decoration:none; color:inherit;"><i class="material-icons">arrow_back</i></a>
     <h3 style="margin:0">Financeiro Pro</h3>
     <i class="material-icons" style="color: var(--primary); cursor: pointer;" onclick="sincronizarDados()">sync</i>
 </div>
@@ -138,7 +35,7 @@
     <div class="main-card">
         <span>Lucro Líquido Realizado</span>
         <h2 id="lucroTotal">R$ 0,00</h2>
-        <div id="qtdVendas" style="opacity: 0.8;">0 vendas registradas</div>
+        <div id="qtdVendas" style="opacity: 0.8;">Sincronizando...</div>
     </div>
 
     <div class="stats-grid">
@@ -161,105 +58,94 @@
     <button class="btn-sync" onclick="sincronizarDados()">
         <i class="material-icons">refresh</i> ATUALIZAR DA PLANILHA
     </button>
-
-    <div class="info-box">
-        <i class="material-icons">info</i>
-        <span>O "Total em Caixa" soma o lucro mais o custo dos itens já vendidos.</span>
-    </div>
 </div>
 
 <script>
-    // URL DO SCRIPT GOOGLE (CERTIFIQUE-SE QUE TERMINA EM /exec)
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
 
     async function sincronizarDados() {
         const statusDiv = document.getElementById('statusCloud');
         statusDiv.style.display = "block";
+        statusDiv.innerText = "☁️ Buscando dados novos...";
         statusDiv.style.background = "#eee";
-        statusDiv.style.color = "#7f8c8d";
-        statusDiv.innerText = "☁️ Sincronizando dados...";
 
         try {
-            // Fetch com Timestamp para evitar cache e forçar atualização do Custo de Reposição
             const response = await fetch(URL_GOOGLE + "?t=" + Date.now());
             const dados = await response.json();
 
             if (dados && dados.length > 0) {
                 const dbFormatado = dados.map(p => {
-                    // Mapeamento flexível para colunas (aceita minúsculo/maiúsculo)
-                    const c = parseFloat(p.custo || p.Custo || 0);
-                    const q = parseInt(p.qtd || p.Qtd || p.quantidade || 0);
-                    const l = parseFloat(p.lucroacumulado || p.lucroAcumulado || 0);
-                    const v = parseInt(p.vendidos || p.Vendidos || 0);
+                    // RESOLUÇÃO DO PROBLEMA: Aceita Qtd (com maiúscula) ou qtd (com minúscula)
+                    const v_custo = parseFloat(p.custo || p.Custo || 0);
+                    const v_qtd = parseInt(p.Qtd || p.qtd || p.quantidade || 0); 
+                    const v_lucro = parseFloat(p.lucroacumulado || p.lucroAcumulado || 0);
+                    const v_vendidos = parseInt(p.vendidos || p.Vendidos || 0);
 
                     return {
-                        nome: p.nome || "Sem nome",
-                        custo: c,
-                        venda: parseFloat(p.venda || p.Venda || 0),
-                        qtd: q,
-                        lucroAcumulado: l,
-                        vendidos: v
+                        nome: p.nome || "Produto",
+                        custo: v_custo,
+                        qtd: v_qtd,
+                        lucroAcumulado: v_lucro,
+                        vendidos: v_vendidos
                     };
                 });
 
                 localStorage.setItem('estoque_db', JSON.stringify(dbFormatado));
                 renderizarResumo(dbFormatado);
                 
-                statusDiv.innerText = "✅ Atualizado com sucesso!";
+                statusDiv.innerText = "✅ Atualizado!";
                 statusDiv.style.background = "#c8f7dc";
-                statusDiv.style.color = "#27ae60";
             }
         } catch (e) {
-            console.error("Erro na sincronização:", e);
-            statusDiv.innerText = "⚠️ Erro: Verifique a conexão ou permissão.";
-            statusDiv.style.background = "#ff6b6b";
-            statusDiv.style.color = "white";
+            console.error(e);
+            statusDiv.innerText = "❌ Erro ao conectar";
+            statusDiv.style.background = "#ffb8b8";
         }
         setTimeout(() => { statusDiv.style.display = "none"; }, 3000);
     }
 
     function renderizarResumo(db) {
         let lucroTotal = 0;
-        let custoReposição = 0; // Valor parado no estoque atual
-        let custoRecuperado = 0; // Valor investido que já voltou pelas vendas
-        let totalVendas = 0;
+        let custoReposição = 0;
+        let custoRecuperado = 0;
+        let totalVendidos = 0;
 
         db.forEach(p => {
             lucroTotal += p.lucroAcumulado;
-            totalVendas += p.vendidos;
-            
-            // Custo de Reposição = Custo unitário x Qtd que ainda tem no estoque
+            totalVendidos += p.vendidos;
+            // Agora o cálculo usa a variável corrigida v_qtd (p.qtd)
             custoReposição += (p.custo * p.qtd);
-            
-            // Custo Recuperado = Custo unitário x Qtd que já foi vendida
             custoRecuperado += (p.custo * p.vendidos);
         });
 
-        const emCaixa = lucroTotal + custoRecuperado;
-
         document.getElementById('lucroTotal').innerText = `R$ ${lucroTotal.toFixed(2)}`;
         document.getElementById('custoTotal').innerText = `R$ ${custoReposição.toFixed(2)}`;
-        document.getElementById('caixaTotal').innerText = `R$ ${emCaixa.toFixed(2)}`;
-        document.getElementById('qtdVendas').innerText = `${totalVendas} unidades vendidas até agora`;
+        document.getElementById('caixaTotal').innerText = `R$ ${(lucroTotal + custoRecuperado).toFixed(2)}`;
+        document.getElementById('qtdVendas').innerText = `${totalVendidos} unidades vendidas`;
     }
 
     function enviarWhatsApp() {
         const db = JSON.parse(localStorage.getItem('estoque_db')) || [];
         let tLucro = 0, tCustoRec = 0;
-        
-        let rel = "*📊 RELATÓRIO FINANCEIRO - ESTOQUE PRO*\n\n";
+        let rel = "*📊 RELATÓRIO FINANCEIRO*\n\n";
         
         db.forEach(p => {
             if(p.vendidos > 0) {
                 tLucro += p.lucroAcumulado;
                 tCustoRec += (p.custo * p.vendidos);
-                rel += `✅ *${p.nome.toUpperCase()}*\n`;
-                rel += `   Vendas: ${p.vendidos} un.\n`;
-                rel += `   Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
-                rel += `   --------------------------\n`;
+                rel += `✅ *${p.nome.toUpperCase()}*\n   Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
             }
         });
 
-        rel += `\n*💵 RESUMO GERAL*`;
-        rel += `\n*Investimento Recuperado:* R$ ${tCustoRec.toFixed(2)}`;
-        rel += `\n*Lucro
+        rel += `\n*💰 TOTAL EM CAIXA: R$ ${(tLucro + tCustoRec).toFixed(2)}*`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
+    }
+
+    window.onload = function() {
+        const local = JSON.parse(localStorage.getItem('estoque_db')) || [];
+        if(local.length > 0) renderizarResumo(local);
+        sincronizarDados();
+    };
+</script>
+</body>
+</html>
