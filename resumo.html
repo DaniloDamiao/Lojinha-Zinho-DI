@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resumo - Estoque Pro</title>
+    <title>Resumo Financeiro - Estoque Pro</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --primary: #e67e22;
-            --secondary: #ff6b6b;
+            --primary: #006437;
+            --secondary: #34b7f1;
+            --danger: #e74c3c;
+            --success: #27ae60;
             --bg: #f5f7fa;
             --dark: #2c3e50;
-            --green: #27ae60;
         }
 
         body {
@@ -29,77 +30,76 @@
             align-items: center;
             gap: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
-
+        
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-        /* Card de Destaque */
-        .main-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 25px;
-            padding: 30px 20px;
-            color: white;
+        /* Banner de Status da Sincronização */
+        #statusCloud {
+            font-size: 11px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2);
-            margin-bottom: 25px;
+            padding: 10px;
+            background: #dfe6e9;
+            color: #2d3436;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: bold;
+            border: 1px solid #b2bec3;
         }
 
-        .main-card span { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
-        .main-card h2 { font-size: 42px; margin: 10px 0; font-weight: 800; }
-
-        /* Grade de Mini Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
+        .card-financeiro {
             background: white;
-            padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            text-align: center;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .stat-card i { font-size: 24px; margin-bottom: 8px; }
-        .stat-card div { font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }
-        .stat-card strong { font-size: 16px; display: block; }
-
-        /* Botão WhatsApp */
-        .btn-wpp {
-            width: 100%;
-            background: #25D366;
-            color: white;
-            border: none;
-            padding: 18px;
+        .card-icon {
+            width: 50px;
+            height: 50px;
             border-radius: 15px;
-            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .info h3 { margin: 0; font-size: 12px; color: #7f8c8d; text-transform: uppercase; }
+        .info p { margin: 5px 0 0; font-size: 22px; font-weight: 800; }
+
+        .bg-caixa { background: var(--success); }
+        .bg-reposicao { background: var(--danger); }
+        .bg-lucro { background: var(--secondary); }
+        .bg-potencial { background: var(--primary); }
+
+        .btn-sync {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(0,100,55,0.2);
         }
 
-        .btn-wpp:active { transform: scale(0.98); }
-
-        .info-box {
-            background: #ebf5fb;
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #2980b9;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .btn-sync:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -112,86 +112,145 @@
 </div>
 
 <div class="container">
-    
-    <div class="main-card">
-        <span>Lucro Líquido Realizado</span>
-        <h2 id="lucroTotal">R$ 0,00</h2>
-        <div id="qtdVendas" style="font-size: 14px; opacity: 0.8;">0 vendas registradas</div>
-    </div>
+    <div id="statusCloud">☁️ Sincronizando com a Planilha...</div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <i class="material-icons" style="color: #e74c3c;">inventory_2</i>
-            <div>Custo de Reposição</div>
-            <strong id="custoTotal">R$ 0,00</strong>
+    <div class="card-financeiro">
+        <div class="card-icon bg-caixa">
+            <i class="material-icons">payments</i>
         </div>
-        <div class="stat-card">
-            <i class="material-icons" style="color: #27ae60;">account_balance_wallet</i>
-            <div>Total em Caixa</div>
-            <strong id="caixaTotal">R$ 0,00</strong>
+        <div class="info">
+            <h3>Total Bruto em Caixa</h3>
+            <p id="totalCaixa">R$ 0,00</p>
         </div>
     </div>
 
-    <button class="btn-wpp" onclick="enviarWhatsApp()">
-        <i class="material-icons">share</i> Enviar Relatório WhatsApp
+    <div class="card-financeiro">
+        <div class="card-icon bg-reposicao">
+            <i class="material-icons">inventory_2</i>
+        </div>
+        <div class="info">
+            <h3>Custo de Reposição</h3>
+            <p id="custoReposicao">R$ 0,00</p>
+        </div>
+    </div>
+
+    <div class="card-financeiro">
+        <div class="card-icon bg-lucro">
+            <i class="material-icons">trending_up</i>
+        </div>
+        <div class="info">
+            <h3>Lucro Realizado</h3>
+            <p id="totalLucro">R$ 0,00</p>
+        </div>
+    </div>
+
+    <div class="card-financeiro">
+        <div class="card-icon bg-potencial">
+            <i class="material-icons">account_balance</i>
+        </div>
+        <div class="info">
+            <h3>Valor de Venda (Estoque Atual)</h3>
+            <p id="valorEstoqueVenda">R$ 0,00</p>
+        </div>
+    </div>
+
+    <button class="btn-sync" onclick="sincronizarDados()">
+        <i class="material-icons">sync</i> ATUALIZAR DA PLANILHA
     </button>
-
-    <div class="info-box">
-        <i class="material-icons">info</i>
-        <span>O "Total em Caixa" é a soma do custo investido mais o lucro das vendas realizadas.</span>
-    </div>
-
 </div>
 
 <script>
-    function carregarDados() {
-        const db = JSON.parse(localStorage.getItem('estoque_db')) || [];
-        
-        let totalLucro = 0;
-        let totalCusto = 0;
-        let totalVendidos = 0;
+    // URL do seu Google Apps Script (o mesmo que você usou nos outros arquivos)
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
 
-        db.forEach(p => {
-            totalLucro += (p.lucroAcumulado || 0);
-            totalCusto += (p.custoAcumulado || 0);
-            totalVendidos += (p.vendidos || 0);
-        });
-
-        document.getElementById('lucroTotal').innerText = `R$ ${totalLucro.toFixed(2)}`;
-        document.getElementById('custoTotal').innerText = `R$ ${totalCusto.toFixed(2)}`;
-        document.getElementById('caixaTotal').innerText = `R$ ${(totalLucro + totalCusto).toFixed(2)}`;
-        document.getElementById('qtdVendas').innerText = `${totalVendidos} unidades vendidas até agora`;
-    }
-
-    function enviarWhatsApp() {
-        const db = JSON.parse(localStorage.getItem('estoque_db')) || [];
-        let totalLucro = 0;
-        let totalCusto = 0;
+    // Executa ao carregar a página
+    window.onload = function() {
+        // Primeiro mostra o que tem no celular (rápido)
+        const dadosLocais = JSON.parse(localStorage.getItem('estoque_db')) || [];
+        calcularFinanceiro(dadosLocais);
         
-        let rel = "*📊 RELATÓRIO DE DESEMPENHO*\n\n";
+        // Depois tenta atualizar da nuvem automaticamente
+        sincronizarDados();
+    };
+
+    async function sincronizarDados() {
+        const statusDiv = document.getElementById('statusCloud');
+        statusDiv.style.display = "block";
+        statusDiv.style.background = "#dfe6e9";
+        statusDiv.innerText = "☁️ Sincronizando com Google Sheets...";
         
-        db.forEach(p => {
-            if(p.vendidos > 0) {
-                totalLucro += p.lucroAcumulado;
-                totalCusto += p.custoAcumulado;
-                rel += `✅ *${p.nome.toUpperCase()}*\n`;
-                rel += `  • Vendas: ${p.vendidos} un.\n`;
-                rel += `  • Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
-                rel += `  --------------------------\n`;
+        try {
+            // Busca dados da Planilha (Função doGet do Script)
+            const response = await fetch(URL_GOOGLE);
+            if (!response.ok) throw new Error("Erro na rede");
+            
+            const dadosNuvem = await response.json();
+            
+            if (dadosNuvem && dadosNuvem.length > 0) {
+                // Padroniza os dados da planilha para o formato do sistema
+                const dbFormatado = dadosNuvem.map(p => ({
+                    id: p.id,
+                    nome: p.nome,
+                    custo: parseFloat(p.custo) || 0,
+                    venda: parseFloat(p.venda) || 0,
+                    qtd: parseInt(p.qtd) || 0,
+                    lucroAcumulado: parseFloat(p.lucroacumulado) || 0,
+                    vendidos: parseInt(p.vendidos) || 0
+                }));
+
+                // Salva no celular para a próxima vez
+                localStorage.setItem('estoque_db', JSON.stringify(dbFormatado));
+                
+                // Atualiza a tela com os números novos
+                calcularFinanceiro(dbFormatado);
+                
+                statusDiv.innerText = "✅ Dados da Planilha Atualizados!";
+                statusDiv.style.background = "#c8f7dc";
             }
-        });
-
-        rel += `\n*💵 RESUMO FINANCEIRO*`;
-        rel += `\n*Investimento:* R$ ${totalCusto.toFixed(2)}`;
-        rel += `\n*Lucro Líquido:* R$ ${totalLucro.toFixed(2)}`;
-        rel += `\n\n*💰 TOTAL EM CAIXA: R$ ${(totalLucro + totalCusto).toFixed(2)}*`;
-
-        window.open(`https://wa.me/?text=${encodeURIComponent(rel)}`, '_blank');
+        } catch (error) {
+            console.error("Erro de sincronização:", error);
+            statusDiv.innerText = "⚠️ Offline: Exibindo dados locais.";
+            statusDiv.style.background = "#ffeaa7";
+        }
+        
+        // Esconde o aviso após 3 segundos
+        setTimeout(() => { statusDiv.style.display = "none"; }, 3000);
     }
 
-    // Inicializa ao carregar
-    carregarDados();
-</script>
+    function calcularFinanceiro(db) {
+        let custoReposicao = 0;
+        let valorEstoqueVenda = 0;
+        let lucroRealizado = 0;
+        let totalCaixa = 0;
 
+        // Recupera também o histórico de vendas local para complementar o caixa se necessário
+        let vendasLocais = JSON.parse(localStorage.getItem('vendas_db')) || [];
+
+        db.forEach(p => {
+            // 1. Custo de Reposição (Custo x Qtd que ainda tenho)
+            custoReposicao += (p.custo * p.qtd);
+            
+            // 2. Valor de Venda do Estoque (Venda x Qtd que ainda tenho)
+            valorEstoqueVenda += (p.venda * p.qtd);
+            
+            // 3. Lucro Realizado (Vem da coluna 'lucroacumulado' da planilha)
+            lucroRealizado += p.lucroAcumulado;
+            
+            // 4. Total em Caixa (Venda x Quantidade já vendida)
+            totalCaixa += (p.venda * p.vendidos);
+        });
+
+        // Caso a planilha ainda esteja zerada, tenta somar das vendas locais
+        if(totalCaixa === 0 && vendasLocais.length > 0) {
+            totalCaixa = vendasLocais.reduce((acc, v) => acc + (parseFloat(v.venda) || 0), 0);
+        }
+
+        // Atualiza os valores no HTML
+        document.getElementById('custoReposicao').innerText = `R$ ${custoReposicao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('valorEstoqueVenda').innerText = `R$ ${valorEstoqueVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalLucro').innerText = `R$ ${lucroRealizado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalCaixa').innerText = `R$ ${totalCaixa.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+    }
+</script>
 </body>
 </html>
