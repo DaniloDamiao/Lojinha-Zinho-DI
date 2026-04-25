@@ -20,6 +20,7 @@
             margin: 0;
             padding: 0;
             color: var(--dark);
+            padding-bottom: 30px;
         }
 
         .header {
@@ -35,7 +36,6 @@
         }
 
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
-
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
         /* Filtros */
@@ -62,6 +62,24 @@
 
         .filter-row { display: flex; gap: 10px; }
 
+        /* Botão Relatório */
+        .btn-report {
+            width: 100%;
+            background: var(--whatsapp);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+        }
+
         .title-section {
             display: flex;
             justify-content: space-between;
@@ -85,15 +103,15 @@
         .venda-info b { display: block; font-size: 16px; margin-bottom: 2px; }
         .venda-info small { color: #95a5a6; font-size: 12px; display: flex; align-items: center; gap: 4px; }
 
-        .venda-valores { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-        .val-lucro { color: #27ae60; font-weight: bold; font-size: 15px; }
+        .venda-valores { text-align: right; }
+        .val-lucro { color: #27ae60; font-weight: bold; font-size: 15px; display: block; }
         .val-venda { color: #7f8c8d; font-size: 12px; }
 
-        .btn-share {
+        .btn-share-mini {
             margin-top: 8px;
             color: var(--whatsapp);
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 4px;
             font-size: 11px;
@@ -119,11 +137,7 @@
             font-size: 13px;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: #bdc3c7;
-        }
+        .empty-state { text-align: center; padding: 50px 20px; color: #bdc3c7; }
     </style>
 </head>
 <body>
@@ -154,6 +168,10 @@
         </div>
     </div>
 
+    <button id="btnRelatorio" class="btn-report" onclick="enviarRelatorioFiltrado()" style="display: none;">
+        <i class="material-icons">description</i> Enviar Relatório via WhatsApp
+    </button>
+
     <div class="title-section">
         <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d;">0 vendas encontradas</span>
     </div>
@@ -166,23 +184,23 @@
 </div>
 
 <script>
+    // Variável para armazenar os itens que estão visíveis após o filtro
+    let vendasAtuaisExibidas = [];
+
     function renderizarHistorico() {
         const vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
         const lista = document.getElementById('listaHistorico');
         const contador = document.getElementById('contador-vendas');
+        const btnRelatorio = document.getElementById('btnRelatorio');
         
-        // Pegar valores dos filtros
         const buscaNome = document.getElementById('filtroNome').value.toLowerCase();
         const dataInicio = document.getElementById('filtroDataInicio').value;
         const dataFim = document.getElementById('filtroDataFim').value;
 
         // Filtragem
-        const vendasFiltradas = vendas.filter(v => {
-            // Filtro de Nome
+        vendasAtuaisExibidas = vendas.filter(v => {
             const matchNome = v.nome.toLowerCase().includes(buscaNome);
             
-            // Filtro de Data (ajustando formato ISO para comparação)
-            // v.data geralmente vem como "DD/MM/YYYY HH:MM"
             const partesData = v.data.split(' ')[0].split('/');
             const dataVendaISO = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
             
@@ -193,25 +211,28 @@
             return matchNome && matchData;
         });
 
-        contador.innerText = `${vendasFiltradas.length} vendas encontradas`;
+        contador.innerText = `${vendasAtuaisExibidas.length} vendas encontradas`;
+        
+        // Só mostra o botão de relatório se houver itens filtrados
+        btnRelatorio.style.display = vendasAtuaisExibidas.length > 0 ? "flex" : "none";
 
-        if (vendasFiltradas.length === 0) {
+        if (vendasAtuaisExibidas.length === 0) {
             lista.innerHTML = `
                 <div class="empty-state">
                     <i class="material-icons">history_toggle_off</i>
-                    <p>Nenhuma venda encontrada para estes filtros.</p>
+                    <p>Nenhuma venda encontrada.</p>
                 </div>`;
             return;
         }
 
-        // Renderização (Ordenado por data mais recente)
-        lista.innerHTML = vendasFiltradas.reverse().map((v, index) => `
+        // Renderiza (os mais novos primeiro)
+        lista.innerHTML = [...vendasAtuaisExibidas].reverse().map(v => `
             <div class="venda-card">
                 <div class="venda-info">
                     <b>${v.nome}</b>
                     <small><i class="material-icons" style="font-size:12px">schedule</i> ${v.data}</small>
-                    <div class="btn-share" onclick="compartilharVenda('${v.nome}', '${v.venda}', '${v.data}')">
-                        <i class="material-icons" style="font-size:14px">share</i> WhatsApp
+                    <div class="btn-share-mini" onclick="compartilharVenda('${v.nome}', '${v.venda}', '${v.data}')">
+                        <i class="material-icons" style="font-size:14px">share</i> Enviar
                     </div>
                 </div>
                 <div class="venda-valores">
@@ -233,14 +254,43 @@
         window.open(url, '_blank');
     }
 
+    function enviarRelatorioFiltrado() {
+        if (vendasAtuaisExibidas.length === 0) return;
+
+        let totalVendas = 0;
+        let totalLucro = 0;
+        let mensagem = `*📊 RELATÓRIO DE VENDAS*\n`;
+        mensagem += `_Filtro aplicado no histórico_\n`;
+        mensagem += `----------------------------\n\n`;
+
+        vendasAtuaisExibidas.forEach(v => {
+            mensagem += `✅ *${v.nome}*\n`;
+            mensagem += `📅 ${v.data}\n`;
+            mensagem += `💰 Valor: R$ ${v.venda.toFixed(2)}\n`;
+            mensagem += `📈 Lucro: R$ ${v.lucro.toFixed(2)}\n`;
+            mensagem += `----------------------------\n`;
+            
+            totalVendas += v.venda;
+            totalLucro += v.lucro;
+        });
+
+        mensagem += `\n*RESUMO FINANCEIRO* 📉\n`;
+        mensagem += `*Qtd Vendas:* ${vendasAtuaisExibidas.length}\n`;
+        mensagem += `*Total Vendido:* R$ ${totalVendas.toFixed(2)}\n`;
+        mensagem += `*Lucro Total:* R$ ${totalLucro.toFixed(2)}\n\n`;
+        mensagem += `_Relatório gerado em: ${new Date().toLocaleString('pt-BR')}_`;
+
+        const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+        window.open(url, '_blank');
+    }
+
     function limparHistorico() {
-        if (confirm("Deseja limpar a lista visual de histórico? Isso não altera o seu lucro total acumulado nos produtos.")) {
+        if (confirm("Deseja limpar a lista visual?")) {
             localStorage.setItem('vendas_db', JSON.stringify([]));
             renderizarHistorico();
         }
     }
 
-    // Inicializa
     renderizarHistorico();
 </script>
 
