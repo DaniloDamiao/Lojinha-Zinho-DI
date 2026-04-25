@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cadastro - Estoque Pro</title>
+    <title>Vendas - Estoque Pro</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --primary: #9b59b6; /* Roxo conforme o menu */
-            --success: #2ecc71;
+            --primary: #9b59b6;
+            --success: #27ae60;
+            --whatsapp: #25d366;
             --bg: #f5f7fa;
             --dark: #2c3e50;
         }
@@ -19,9 +20,9 @@
             margin: 0;
             padding: 0;
             color: var(--dark);
+            padding-bottom: 80px; /* Espaço para o botão flutuante */
         }
 
-        /* Topo */
         .header {
             background: white;
             padding: 15px 20px;
@@ -34,227 +35,183 @@
             z-index: 100;
         }
 
-        .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
-
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-        /* Formulário */
-        .card-form {
+        /* Busca */
+        .search-box {
             background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-        }
-
-        h3 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: #7f8c8d; margin-bottom: 5px; margin-left: 5px; }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #eee;
+            padding: 10px;
             border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background: #f9f9f9;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: var(--primary); background: white; }
-
-        .row { display: flex; gap: 10px; }
-
-        /* Botões */
-        .btn-save {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #9b59b6 0%, #34495e 100%);
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        .btn-cancel {
-            width: 100%;
-            padding: 10px;
+        .search-box input {
             border: none;
-            background: none;
-            color: #95a5a6;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 14px;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
         }
 
-        /* Lista de Produtos Cadastrados */
-        .item-registrado {
+        /* Lista de Seleção */
+        .item-selecao {
             background: white;
-            padding: 12px 15px;
+            padding: 15px;
             border-radius: 12px;
             margin-bottom: 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            border-left: 5px solid var(--primary);
+            gap: 15px;
+            transition: 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
         }
 
-        .item-registrado span { font-weight: 600; }
-        .item-registrado small { color: #7f8c8d; }
+        .item-selecao.selected {
+            border-color: var(--primary);
+            background: #fdf7ff;
+        }
+
+        .item-info { flex: 1; }
+        .item-info span { font-weight: bold; display: block; }
+        .item-info small { color: #7f8c8d; }
+
+        .checkbox-custom {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .selected .checkbox-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Botão WhatsApp */
+        .fab-whatsapp {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--whatsapp);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+            width: 90%;
+            max-width: 400px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <a href="index.html" class="btn-back">
+    <a href="index.html" style="text-decoration: none; color: var(--dark);">
         <i class="material-icons">arrow_back</i>
     </a>
-    <h3 style="margin:0; color: var(--dark)">Gerenciar Produtos</h3>
+    <h3 style="margin:0;">Enviar Catálogo</h3>
 </div>
 
 <div class="container">
-    <div class="card-form">
-        <h3 id="titulo-form"><i class="material-icons">add_circle</i> Novo Produto</h3>
-        
-        <input type="hidden" id="edit-id">
-        
-        <div class="input-group">
-            <label>Nome do Produto</label>
-            <input type="text" id="nome" placeholder="Ex: Camiseta Branca">
-        </div>
-
-        <div class="row">
-            <div class="input-group" style="flex: 1;">
-                <label>Preço Custo (R$)</label>
-                <input type="number" id="custo" step="0.01" placeholder="0.00">
-            </div>
-            <div class="input-group" style="flex: 1;">
-                <label>Preço Venda (R$)</label>
-                <input type="number" id="venda" step="0.01" placeholder="0.00">
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>Quantidade em Estoque</label>
-            <input type="number" id="qtd" placeholder="0">
-        </div>
-
-        <button class="btn-save" onclick="salvarProduto()">
-            <i class="material-icons">save</i> <span id="texto-botao">Salvar Produto</span>
-        </button>
-        
-        <button id="btn-cancelar" class="btn-cancel" onclick="limparCampos()" style="display:none;">
-            Cancelar Edição
-        </button>
+    <div class="search-box">
+        <i class="material-icons" style="color: #bdc3c7;">search</i>
+        <input type="text" id="inputBusca" placeholder="Buscar produto..." onkeyup="filtrarProdutos()">
     </div>
 
-    <h4>Produtos Cadastrados</h4>
-    <div id="listaGerenciar">
+    <div id="listaProdutos">
         </div>
 </div>
 
+<button class="fab-whatsapp" onclick="enviarWhatsApp()">
+    <i class="material-icons">share</i> Enviar Selecionados
+</button>
+
 <script>
     let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
-
-    // Verificar se veio da tela de vendas para editar
-    window.onload = function() {
-        const idParaEditar = localStorage.getItem('produto_para_editar');
-        if (idParaEditar) {
-            prepararEdicao(parseInt(idParaEditar));
-            localStorage.removeItem('produto_para_editar'); // Limpa após usar
-        }
-        renderizar();
-    }
-
-    function salvarProduto() {
-        const id = document.getElementById('edit-id').value;
-        const nome = document.getElementById('nome').value;
-        const custo = parseFloat(document.getElementById('custo').value);
-        const venda = parseFloat(document.getElementById('venda').value);
-        const qtd = parseInt(document.getElementById('qtd').value);
-
-        if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
-            alert("Por favor, preencha todos os campos corretamente.");
-            return;
-        }
-
-        if (id) {
-            // Editando existente
-            const i = db.findIndex(p => p.id == id);
-            db[i].nome = nome;
-            db[i].custo = custo;
-            db[i].venda = venda;
-            db[i].qtd = qtd;
-        } else {
-            // Novo produto
-            db.push({
-                id: Date.now(),
-                nome: nome,
-                custo: custo,
-                venda: venda,
-                qtd: qtd,
-                vendidos: 0,
-                lucroAcumulado: 0,
-                custoAcumulado: 0
-            });
-        }
-
-        localStorage.setItem('estoque_db', JSON.stringify(db));
-        limparCampos();
-        renderizar();
-        alert("Sucesso! Produto guardado.");
-    }
-
-    function prepararEdicao(id) {
-        const p = db.find(prod => prod.id === id);
-        if(!p) return;
-
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('nome').value = p.nome;
-        document.getElementById('custo').value = p.custo;
-        document.getElementById('venda').value = p.venda;
-        document.getElementById('qtd').value = p.qtd;
-
-        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">edit</i> Editando Produto';
-        document.getElementById('texto-botao').innerText = "Atualizar Cadastro";
-        document.getElementById('btn-cancelar').style.display = "block";
-    }
-
-    function limparCampos() {
-        document.getElementById('edit-id').value = '';
-        document.getElementById('nome').value = '';
-        document.getElementById('custo').value = '';
-        document.getElementById('venda').value = '';
-        document.getElementById('qtd').value = '';
-        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">add_circle</i> Novo Produto';
-        document.getElementById('texto-botao').innerText = "Salvar Produto";
-        document.getElementById('btn-cancelar').style.display = "none";
-    }
+    let selecionados = new Set();
 
     function renderizar() {
-        const lista = document.getElementById('listaGerenciar');
-        lista.innerHTML = db.map(p => `
-            <div class="item-registrado">
-                <div>
-                    <span>${p.nome}</span><br>
-                    <small>Custo: R$ ${p.custo.toFixed(2)} | Venda: R$ ${p.venda.toFixed(2)}</small>
+        const lista = document.getElementById('listaProdutos');
+        if (db.length === 0) {
+            lista.innerHTML = '<p style="text-align:center; color:#95a5a6;">Nenhum produto cadastrado.</p>';
+            return;
+        }
+        
+        atualizarLista(db);
+    }
+
+    function atualizarLista(produtos) {
+        const lista = document.getElementById('listaProdutos');
+        lista.innerHTML = produtos.map(p => `
+            <div class="item-selecao ${selecionados.has(p.id) ? 'selected' : ''}" onclick="toggleSelecao(${p.id})">
+                <div class="checkbox-custom">
+                    <i class="material-icons" style="font-size: 18px;">${selecionados.has(p.id) ? 'check' : ''}</i>
                 </div>
-                <div style="text-align:right">
-                    <span style="color:var(--primary)">${p.qtd} un</span>
+                <div class="item-info">
+                    <span>${p.nome}</span>
+                    <small>Preço: R$ ${p.venda.toFixed(2)} | Estoque: ${p.qtd}</small>
                 </div>
             </div>
         `).join('');
     }
+
+    function filtrarProdutos() {
+        const termo = document.getElementById('inputBusca').value.toLowerCase();
+        const filtrados = db.filter(p => p.nome.toLowerCase().includes(termo));
+        atualizarLista(filtrados);
+    }
+
+    function toggleSelecao(id) {
+        if (selecionados.has(id)) {
+            selecionados.delete(id);
+        } else {
+            selecionados.add(id);
+        }
+        // Re-filtra para manter a busca ativa enquanto seleciona
+        filtrarProdutos();
+    }
+
+    function enviarWhatsApp() {
+        if (selecionados.size === 0) {
+            alert("Selecione ao menos um produto!");
+            return;
+        }
+
+        let mensagem = "*Lista de Produtos:*\n\n";
+        let total = 0;
+
+        db.forEach(p => {
+            if (selecionados.has(p.id)) {
+                mensagem += `• *${p.nome}*\n  Valor: R$ ${p.venda.toFixed(2)}\n\n`;
+                total += p.venda;
+            }
+        });
+
+        mensagem += `_Gerado por Estoque Pro_`;
+
+        // Codifica para URL
+        const msgEncoded = encodeURIComponent(mensagem);
+        window.open(`https://wa.me/?text=${msgEncoded}`, '_blank');
+    }
+
+    window.onload = renderizar;
 </script>
 
 </body>
