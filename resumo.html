@@ -27,19 +27,26 @@
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .stat-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); text-align: center; }
         
+        .btn-wpp { 
+            width: 100%; background: #25D366; color: white; border: none; 
+            padding: 18px; border-radius: 15px; font-size: 16px; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            cursor: pointer; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); margin-bottom: 12px;
+        }
+
         .btn-sync { 
             width: 100%; background: white; color: var(--primary); border: 2px solid var(--primary); 
             padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; 
             display: flex; align-items: center; justify-content: center; gap: 8px; 
         }
-        .btn-sync:active { transform: scale(0.98); }
+        .btn-wpp:active, .btn-sync:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
 
 <div class="header">
     <a href="index.html" class="btn-back"><i class="material-icons">arrow_back</i></a>
-    <h3 style="margin:0">Financeiro</h3>
+    <h3 style="margin:0">Financeiro Pro</h3>
     <i class="material-icons" style="color: var(--primary); cursor: pointer;" onclick="sincronizarDados()">sync</i>
 </div>
 
@@ -47,7 +54,7 @@
     <div id="statusCloud"></div>
     
     <div class="main-card">
-        <span>Lucro Realizado</span>
+        <span>Lucro Líquido Realizado</span>
         <h2 id="lucroTotal">R$ 0,00</h2>
         <div id="qtdVendas" style="opacity: 0.8;">0 vendas registradas</div>
     </div>
@@ -60,34 +67,36 @@
         </div>
         <div class="stat-card">
             <i class="material-icons" style="color: #27ae60;">account_balance_wallet</i>
-            <div>Caixa</div>
+            <div>Em Caixa</div>
             <strong id="caixaTotal">R$ 0,00</strong>
         </div>
     </div>
 
+    <button class="btn-wpp" onclick="enviarWhatsApp()">
+        <i class="material-icons">share</i> Enviar Relatório WhatsApp
+    </button>
+
     <button class="btn-sync" onclick="sincronizarDados()">
-        <i class="material-icons">refresh</i> ATUALIZAR AGORA
+        <i class="material-icons">refresh</i> ATUALIZAR DA PLANILHA
     </button>
 </div>
 
 <script>
-    // URL DO SEU GOOGLE SCRIPT
     const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbxFg7XAq_moL2kFmedY7w1n3iQ2mvL3jqKZekSS_efOEGVXDAelyJZekDbxqkUiwIsE/exec";
 
-    // A função PRECISA estar fora de qualquer outra para ser encontrada globalmente
     async function sincronizarDados() {
         const statusDiv = document.getElementById('statusCloud');
         statusDiv.style.display = "block";
         statusDiv.style.background = "#eee";
-        statusDiv.innerText = "☁️ Buscando dados...";
+        statusDiv.innerText = "☁️ Sincronizando...";
 
         try {
-            // Timestamp para evitar cache do navegador
             const response = await fetch(URL_GOOGLE + "?t=" + Date.now());
             const dados = await response.json();
 
             if (dados && dados.length > 0) {
                 const dbFormatado = dados.map(p => ({
+                    nome: p.nome,
                     custo: parseFloat(p.custo || p.Custo) || 0,
                     venda: parseFloat(p.venda || p.Venda) || 0,
                     qtd: parseInt(p.qtd || p.Qtd) || 0,
@@ -98,12 +107,12 @@
                 localStorage.setItem('estoque_db', JSON.stringify(dbFormatado));
                 renderizarResumo(dbFormatado);
                 
-                statusDiv.innerText = "✅ Sincronizado!";
+                statusDiv.innerText = "✅ Dados Atualizados!";
                 statusDiv.style.background = "#c8f7dc";
             }
         } catch (e) {
             console.error(e);
-            statusDiv.innerText = "⚠️ Erro ao buscar dados.";
+            statusDiv.innerText = "⚠️ Erro de conexão.";
             statusDiv.style.background = "#ff6b6b";
             statusDiv.style.color = "white";
         }
@@ -123,10 +132,34 @@
         document.getElementById('lucroTotal').innerText = `R$ ${lucro.toFixed(2)}`;
         document.getElementById('custoTotal').innerText = `R$ ${reposicao.toFixed(2)}`;
         document.getElementById('caixaTotal').innerText = `R$ ${(lucro + recuperado).toFixed(2)}`;
-        document.getElementById('qtdVendas').innerText = `${vendas} vendas registradas`;
+        document.getElementById('qtdVendas').innerText = `${vendas} unidades vendidas até agora`;
     }
 
-    // Inicialização ao carregar a página
+    function enviarWhatsApp() {
+        const db = JSON.parse(localStorage.getItem('estoque_db')) || [];
+        let tLucro = 0, tCustoRecuperado = 0;
+        
+        let relatorio = "*📊 RELATÓRIO FINANCEIRO - ESTOQUE PRO*\n\n";
+        
+        db.forEach(p => {
+            if(p.vendidos > 0) {
+                tLucro += p.lucroAcumulado;
+                tCustoRecuperado += (p.custo * p.vendidos);
+                relatorio += `✅ *${p.nome.toUpperCase()}*\n`;
+                relatorio += `   Vendas: ${p.vendidos} un.\n`;
+                relatorio += `   Lucro: R$ ${p.lucroAcumulado.toFixed(2)}\n`;
+                relatorio += `   --------------------------\n`;
+            }
+        });
+
+        relatorio += `\n*💵 RESUMO GERAL*`;
+        relatorio += `\n*Investimento Recuperado:* R$ ${tCustoRecuperado.toFixed(2)}`;
+        relatorio += `\n*Lucro Líquido:* R$ ${tLucro.toFixed(2)}`;
+        relatorio += `\n\n*💰 TOTAL EM CAIXA: R$ ${(tLucro + tCustoRecuperado).toFixed(2)}*`;
+
+        window.open(`https://wa.me/?text=${encodeURIComponent(relatorio)}`, '_blank');
+    }
+
     window.onload = function() {
         const local = JSON.parse(localStorage.getItem('estoque_db')) || [];
         if(local.length > 0) renderizarResumo(local);
