@@ -11,6 +11,7 @@
             --secondary: #c0392b;
             --bg: #f5f7fa;
             --dark: #2c3e50;
+            --whatsapp: #25d366;
         }
 
         body {
@@ -37,14 +38,38 @@
 
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
+        /* Filtros */
+        .filter-section {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .filter-group { margin-bottom: 10px; }
+        .filter-group label { display: block; font-size: 11px; color: #7f8c8d; margin-bottom: 4px; font-weight: bold; }
+        
+        .filter-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .filter-row { display: flex; gap: 10px; }
+
         .title-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
-        /* Lista de Vendas */
+        /* Card de Venda */
         .venda-card {
             background: white;
             border-radius: 15px;
@@ -54,17 +79,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-right: 4px solid #c0392b;
+            border-right: 4px solid var(--secondary);
         }
 
         .venda-info b { display: block; font-size: 16px; margin-bottom: 2px; }
         .venda-info small { color: #95a5a6; font-size: 12px; display: flex; align-items: center; gap: 4px; }
 
-        .venda-valores { text-align: right; }
-        .val-lucro { color: #27ae60; font-weight: bold; font-size: 15px; display: block; }
+        .venda-valores { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .val-lucro { color: #27ae60; font-weight: bold; font-size: 15px; }
         .val-venda { color: #7f8c8d; font-size: 12px; }
 
-        /* Botão Limpar */
+        .btn-share {
+            margin-top: 8px;
+            color: var(--whatsapp);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #e8f9ef;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+
         .btn-limpar {
             width: 100%;
             background: none;
@@ -86,7 +124,6 @@
             padding: 50px 20px;
             color: #bdc3c7;
         }
-        .empty-state i { font-size: 48px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -100,17 +137,32 @@
 
 <div class="container">
     
-    <div class="title-section">
-        <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d;">0 vendas registradas</span>
+    <div class="filter-section">
+        <div class="filter-group">
+            <label>BUSCAR POR PRODUTO</label>
+            <input type="text" id="filtroNome" class="filter-input" placeholder="Ex: Camiseta..." oninput="renderizarHistorico()">
+        </div>
+        <div class="filter-row">
+            <div class="filter-group" style="flex: 1;">
+                <label>DE:</label>
+                <input type="date" id="filtroDataInicio" class="filter-input" onchange="renderizarHistorico()">
+            </div>
+            <div class="filter-group" style="flex: 1;">
+                <label>ATÉ:</label>
+                <input type="date" id="filtroDataFim" class="filter-input" onchange="renderizarHistorico()">
+            </div>
+        </div>
     </div>
 
-    <div id="listaHistorico">
-        </div>
+    <div class="title-section">
+        <span id="contador-vendas" style="font-size: 13px; color: #7f8c8d;">0 vendas encontradas</span>
+    </div>
+
+    <div id="listaHistorico"></div>
 
     <button class="btn-limpar" onclick="limparHistorico()">
         <i class="material-icons">delete_sweep</i> Limpar Histórico Visual
     </button>
-
 </div>
 
 <script>
@@ -118,23 +170,49 @@
         const vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
         const lista = document.getElementById('listaHistorico');
         const contador = document.getElementById('contador-vendas');
+        
+        // Pegar valores dos filtros
+        const buscaNome = document.getElementById('filtroNome').value.toLowerCase();
+        const dataInicio = document.getElementById('filtroDataInicio').value;
+        const dataFim = document.getElementById('filtroDataFim').value;
 
-        contador.innerText = `${vendas.length} vendas registradas`;
+        // Filtragem
+        const vendasFiltradas = vendas.filter(v => {
+            // Filtro de Nome
+            const matchNome = v.nome.toLowerCase().includes(buscaNome);
+            
+            // Filtro de Data (ajustando formato ISO para comparação)
+            // v.data geralmente vem como "DD/MM/YYYY HH:MM"
+            const partesData = v.data.split(' ')[0].split('/');
+            const dataVendaISO = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
+            
+            let matchData = true;
+            if (dataInicio && dataVendaISO < dataInicio) matchData = false;
+            if (dataFim && dataVendaISO > dataFim) matchData = false;
 
-        if (vendas.length === 0) {
+            return matchNome && matchData;
+        });
+
+        contador.innerText = `${vendasFiltradas.length} vendas encontradas`;
+
+        if (vendasFiltradas.length === 0) {
             lista.innerHTML = `
                 <div class="empty-state">
                     <i class="material-icons">history_toggle_off</i>
-                    <p>Nenhuma venda encontrada no histórico.</p>
+                    <p>Nenhuma venda encontrada para estes filtros.</p>
                 </div>`;
             return;
         }
 
-        lista.innerHTML = vendas.map(v => `
+        // Renderização (Ordenado por data mais recente)
+        lista.innerHTML = vendasFiltradas.reverse().map((v, index) => `
             <div class="venda-card">
                 <div class="venda-info">
                     <b>${v.nome}</b>
                     <small><i class="material-icons" style="font-size:12px">schedule</i> ${v.data}</small>
+                    <div class="btn-share" onclick="compartilharVenda('${v.nome}', '${v.venda}', '${v.data}')">
+                        <i class="material-icons" style="font-size:14px">share</i> WhatsApp
+                    </div>
                 </div>
                 <div class="venda-valores">
                     <span class="val-lucro">+ R$ ${v.lucro.toFixed(2)}</span>
@@ -142,6 +220,17 @@
                 </div>
             </div>
         `).join('');
+    }
+
+    function compartilharVenda(produto, valor, data) {
+        const mensagem = `*Comprovante de Venda*\n\n` +
+                         `*Produto:* ${produto}\n` +
+                         `*Valor:* R$ ${parseFloat(valor).toFixed(2)}\n` +
+                         `*Data:* ${data}\n\n` +
+                         `_Gerado por Estoque Pro_`;
+        
+        const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+        window.open(url, '_blank');
     }
 
     function limparHistorico() {
