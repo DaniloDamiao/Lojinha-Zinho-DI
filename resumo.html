@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cadastro - Estoque Pro</title>
+    <title>Resumo Financeiro - Estoque Pro</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --primary: #9b59b6; /* Roxo conforme o menu */
-            --success: #2ecc71;
+            --primary: #006437;
+            --secondary: #34b7f1;
+            --danger: #e74c3c;
+            --success: #27ae60;
             --bg: #f5f7fa;
             --dark: #2c3e50;
         }
@@ -21,7 +23,6 @@
             color: var(--dark);
         }
 
-        /* Topo */
         .header {
             background: white;
             padding: 15px 20px;
@@ -29,88 +30,29 @@
             align-items: center;
             gap: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
         .btn-back { text-decoration: none; color: var(--dark); display: flex; align-items: center; }
-
+        
         .container { max-width: 500px; margin: auto; padding: 20px; }
 
-        /* Formulário */
-        .card-form {
+        .card {
             background: white;
-            border-radius: 20px;
+            border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-        }
-
-        h3 { margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: #7f8c8d; margin-bottom: 5px; margin-left: 5px; }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #eee;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background: #f9f9f9;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: var(--primary); background: white; }
-
-        .row { display: flex; gap: 10px; }
-
-        /* Botões */
-        .btn-save {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #9b59b6 0%, #34495e 100%);
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-cancel {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            background: none;
-            color: #95a5a6;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        /* Lista de Produtos Cadastrados */
-        .item-registrado {
-            background: white;
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 5px solid var(--primary);
         }
 
-        .item-registrado span { font-weight: 600; }
-        .item-registrado small { color: #7f8c8d; }
+        .card-label { color: #7f8c8d; font-size: 14px; font-weight: bold; text-transform: uppercase; }
+        .card-value { font-size: 20px; font-weight: 800; margin-top: 5px; }
+        
+        .val-caixa { color: var(--success); }
+        .val-reposicao { color: var(--danger); }
+        .val-lucro { color: var(--secondary); }
     </style>
 </head>
 <body>
@@ -119,142 +61,64 @@
     <a href="index.html" class="btn-back">
         <i class="material-icons">arrow_back</i>
     </a>
-    <h3 style="margin:0; color: var(--dark)">Gerenciar Produtos</h3>
+    <h3 style="margin:0">Resumo Financeiro</h3>
 </div>
 
 <div class="container">
-    <div class="card-form">
-        <h3 id="titulo-form"><i class="material-icons">add_circle</i> Novo Produto</h3>
-        
-        <input type="hidden" id="edit-id">
-        
-        <div class="input-group">
-            <label>Nome do Produto</label>
-            <input type="text" id="nome" placeholder="Ex: Camiseta Branca">
+    <div class="card">
+        <div>
+            <div class="card-label">Total em Caixa</div>
+            <div id="totalCaixa" class="card-value val-caixa">R$ 0,00</div>
         </div>
-
-        <div class="row">
-            <div class="input-group" style="flex: 1;">
-                <label>Preço Custo (R$)</label>
-                <input type="number" id="custo" step="0.01" placeholder="0.00">
-            </div>
-            <div class="input-group" style="flex: 1;">
-                <label>Preço Venda (R$)</label>
-                <input type="number" id="venda" step="0.01" placeholder="0.00">
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>Quantidade em Estoque</label>
-            <input type="number" id="qtd" placeholder="0">
-        </div>
-
-        <button class="btn-save" onclick="salvarProduto()">
-            <i class="material-icons">save</i> <span id="texto-botao">Salvar Produto</span>
-        </button>
-        
-        <button id="btn-cancelar" class="btn-cancel" onclick="limparCampos()" style="display:none;">
-            Cancelar Edição
-        </button>
+        <i class="material-icons" style="color:#27ae6066">payments</i>
     </div>
 
-    <h4>Produtos Cadastrados</h4>
-    <div id="listaGerenciar">
+    <div class="card">
+        <div>
+            <div class="card-label">Custo de Reposição</div>
+            <div id="custoReposicao" class="card-value val-reposicao">R$ 0,00</div>
         </div>
+        <i class="material-icons" style="color:#e74c3c66">inventory_2</i>
+    </div>
+
+    <div class="card">
+        <div>
+            <div class="card-label">Lucro Realizado</div>
+            <div id="totalLucro" class="card-value val-lucro">R$ 0,00</div>
+        </div>
+        <i class="material-icons" style="color:#34b7f166">trending_up</i>
+    </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('estoque_db')) || [];
+    function carregarResumo() {
+        // Busca os dados que estão salvos no celular (que vieram da planilha anteriormente)
+        const db = JSON.parse(localStorage.getItem('estoque_db')) || [];
+        const vendas = JSON.parse(localStorage.getItem('vendas_db')) || [];
 
-    // Verificar se veio da tela de vendas para editar
-    window.onload = function() {
-        const idParaEditar = localStorage.getItem('produto_para_editar');
-        if (idParaEditar) {
-            prepararEdicao(parseInt(idParaEditar));
-            localStorage.removeItem('produto_para_editar'); // Limpa após usar
-        }
-        renderizar();
+        let custoReposicao = 0;
+        let totalVendas = 0;
+        let lucroTotal = 0;
+
+        // Cálculo do Custo de Reposição (O que tem no estoque hoje)
+        db.forEach(p => {
+            custoReposicao += (parseFloat(p.custo || 0) * parseInt(p.qtd || 0));
+        });
+
+        // Cálculo do Caixa e Lucro (Baseado nas vendas realizadas)
+        vendas.forEach(v => {
+            totalVendas += parseFloat(v.venda || 0);
+            lucroTotal += parseFloat(v.lucro || 0);
+        });
+
+        // Atualiza a tela com os valores formatados
+        document.getElementById('totalCaixa').innerText = `R$ ${totalVendas.toFixed(2)}`;
+        document.getElementById('custoReposicao').innerText = `R$ ${custoReposicao.toFixed(2)}`;
+        document.getElementById('totalLucro').innerText = `R$ ${lucroTotal.toFixed(2)}`;
     }
 
-    function salvarProduto() {
-        const id = document.getElementById('edit-id').value;
-        const nome = document.getElementById('nome').value;
-        const custo = parseFloat(document.getElementById('custo').value);
-        const venda = parseFloat(document.getElementById('venda').value);
-        const qtd = parseInt(document.getElementById('qtd').value);
-
-        if (!nome || isNaN(custo) || isNaN(venda) || isNaN(qtd)) {
-            alert("Por favor, preencha todos os campos corretamente.");
-            return;
-        }
-
-        if (id) {
-            // Editando existente
-            const i = db.findIndex(p => p.id == id);
-            db[i].nome = nome;
-            db[i].custo = custo;
-            db[i].venda = venda;
-            db[i].qtd = qtd;
-        } else {
-            // Novo produto
-            db.push({
-                id: Date.now(),
-                nome: nome,
-                custo: custo,
-                venda: venda,
-                qtd: qtd,
-                vendidos: 0,
-                lucroAcumulado: 0,
-                custoAcumulado: 0
-            });
-        }
-
-        localStorage.setItem('estoque_db', JSON.stringify(db));
-        limparCampos();
-        renderizar();
-        alert("Sucesso! Produto guardado.");
-    }
-
-    function prepararEdicao(id) {
-        const p = db.find(prod => prod.id === id);
-        if(!p) return;
-
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('nome').value = p.nome;
-        document.getElementById('custo').value = p.custo;
-        document.getElementById('venda').value = p.venda;
-        document.getElementById('qtd').value = p.qtd;
-
-        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">edit</i> Editando Produto';
-        document.getElementById('texto-botao').innerText = "Atualizar Cadastro";
-        document.getElementById('btn-cancelar').style.display = "block";
-    }
-
-    function limparCampos() {
-        document.getElementById('edit-id').value = '';
-        document.getElementById('nome').value = '';
-        document.getElementById('custo').value = '';
-        document.getElementById('venda').value = '';
-        document.getElementById('qtd').value = '';
-        document.getElementById('titulo-form').innerHTML = '<i class="material-icons">add_circle</i> Novo Produto';
-        document.getElementById('texto-botao').innerText = "Salvar Produto";
-        document.getElementById('btn-cancelar').style.display = "none";
-    }
-
-    function renderizar() {
-        const lista = document.getElementById('listaGerenciar');
-        lista.innerHTML = db.map(p => `
-            <div class="item-registrado">
-                <div>
-                    <span>${p.nome}</span><br>
-                    <small>Custo: R$ ${p.custo.toFixed(2)} | Venda: R$ ${p.venda.toFixed(2)}</small>
-                </div>
-                <div style="text-align:right">
-                    <span style="color:var(--primary)">${p.qtd} un</span>
-                </div>
-            </div>
-        `).join('');
-    }
+    // Chama a função assim que abrir a página
+    window.onload = carregarResumo;
 </script>
 
 </body>
